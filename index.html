@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>COZU 禮贈品查詢系統 (Workshop Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- 整合自原本的 CSS 樣式 -->
+<style>
+  :root{
+    --bg:#ffffff; --bg-soft:#f7f7f7; --ink:#1a1a1a; --ink-2:#888888;
+    --line:#e5e5e5; --hover:#f0f0f0; --radius:7px; --rail:248px;
+    --font:"Mulish","Noto Sans TC",-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{ background:var(--bg); color:var(--ink); font-family:var(--font); font-size:13px; line-height:1.55; margin:0; }
+  .wrap{max-width:1240px;margin:0 auto;padding:0 28px;}
+  .topbar{border-bottom:1px solid var(--line); background:#fff;}
+  .topbar-inner{display:flex;align-items:center;gap:16px;height:54px;}
+  .brand b{font-size:15px;font-weight:700;}
+  .brand span{font-size:11px;color:var(--ink-2);margin-left:9px;}
+  .topbar-meta{margin-left:auto;font-size:11px;color:var(--ink-2);}
+  .tabs{display:flex;gap:4px;padding:10px 0 0;}
+  .tab{padding:8px 15px; border:1px solid transparent; border-bottom:none; border-radius:7px 7px 0 0; font-weight:500; color:var(--ink-2); background:transparent; display:flex; align-items:center; gap:7px; cursor:pointer;}
+  .tab.active{color:var(--ink); background:var(--bg); border-color:var(--line); position:relative; top:1px;}
+  .tab.disabled{color:#bdbdbd; cursor:default;}
+  .layout{display:grid;grid-template-columns:var(--rail) 1fr;gap:34px;padding:26px 0 80px;}
+  .rail{position:sticky;top:18px;}
+  .rail-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;}
+  .fgroup{padding:14px 0;border-top:1px solid var(--line);}
+  .fgroup h3{font-size:12px;margin:0 0 9px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{border:1px solid var(--line); border-radius:20px; padding:4px 11px; font-size:11.5px; background:#fff;}
+  .chip.on{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(var(--cols,3),1fr);}
+  .card{border:1px solid var(--line); border-radius:var(--radius); background:#fff; overflow:hidden; text-align:left; padding:0; width:100%; cursor:pointer;}
+  .ph{background:var(--bg-soft); border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:center; position:relative;}
+  .ph.r43{aspect-ratio:4/3;} .ph.r11{aspect-ratio:1/1;}
+  .ph-label{font-size:10.5px; color:#bcbcbc; z-index:1;}
+  .card-body{padding:12px 13px 13px;}
+  .card-name{font-size:14px; font-weight:500; margin:0 0 6px;}
+  .card-price{font-size:13px; font-weight:700;}
+  .mtag{font-size:10.5px; color:var(--ink-2); border:1px solid var(--line); border-radius:5px; padding:1px 7px; margin-right:4px;}
+  /* 側邊資訊欄 */
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);z-index:40;}
+  .peek{position:fixed;top:0;right:0;height:100%;width:440px;background:#fff;z-index:50;padding:20px;overflow-y:auto;box-shadow:-5px 0 15px rgba(0,0,0,0.05);}
+  /* 為了長度簡略，部分 Tweaks 樣式在下方 js 注入[cite: 4] */
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- 引入 React 必要的執行環境[cite: 2] -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+
+<script type="text/babel">
+/* 整合自 tweaks-panel.jsx 的控制邏輯[cite: 4] */
+const { useState, useMemo, useEffect } = React;
+
+// 這裡直接將你原本的 Tweaks Panel 簡化整合進來[cite: 4]
+function TweaksPanel({ children }) {
+  return (
+    <div style={{position:'fixed', right:16, bottom:16, background:'#fff', border:'1px solid #ddd', padding:16, borderRadius:12, boxShadow:'0 4px 12px rgba(0,0,0,0.1)', z-index:100}}>
+      <h4 style={{margin:'0 0 10px 0', fontSize:12}}>卡片顯示設定</h4>
+      {children}
+    </div>
+  );
+}
+
+/* 整合自 data.js 的資料轉換規則[cite: 3] */
+window.COZU_MATERIAL_RULES = [
+  ["玻璃", /玻璃|香檳杯|咖啡杯|啤酒杯/], ["壓克力", /壓克力/], ["PP", /PP/], ["布料織品", /布料|毛巾布|繩/], ["石材水泥", /冰磚|石粉|石膏|水泥|擴香石/], ["泰維克", /泰維克/], ["NFC", /NFC/]
+];
+window.cozuMaterials = (m) => window.COZU_MATERIAL_RULES.filter(([,re]) => re.test(m)).map(([k]) => k);
+window.COZU_MATERIAL_OPTIONS = ["玻璃","壓克力","布料織品","石材水泥","PP","泰維克","NFC"];
+window.COZU_THEME_OPTIONS = ["週年慶","員工福利","節慶送禮","尾牙","新品上市","開幕活動"];
+window.COZU_INDUSTRY_OPTIONS = ["科技","金融","醫療","零售","餐飲","政府機關","其他"];
+window.COZU_TAG_OPTIONS = ["人氣","實用","科技感","環保"];
+
+/* 整合自 app.jsx 的主程式邏輯 */
+const BUDGETS = [
+  { id: "all", label: "不限", test: () => true },
+  { id: "b150", label: "NT$150 以下", test: p => p <= 150 },
+  { id: "b300", label: "NT$150–300", test: p => p > 150 && p <= 300 },
+  { id: "b501", label: "NT$500 以上", test: p => p > 500 },
+];
+
+function App() {
+  const [gifts, setGifts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [ratio, setRatio] = useState("4:3");
+  const [cols, setCols] = useState(3);
+  const [budget, setBudget] = useState("all");
+  const [open, setOpen] = useState(null);
+
+  // 模擬 Fetch Google Sheet 資料
+  useEffect(() => {
+    // 這裡放你的 Google Apps Script URL
+    const API_URL = "https://docs.google.com/spreadsheets/d/1ElYuyhmYM7GGUIdx1h93AiIqSISDbzaO15CN_goIx9A/edit?gid=0#gid=0";
+    
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => { setGifts(data); setLoading(false); })
+      .catch(() => {
+        // 如果 API 還沒建好，就先讀取這份寫死的備用資料[cite: 3]
+        setGifts([
+          { name: "單層杯＋杯墊組", price: 350, moq: 300, material: "玻璃", tag: "人氣", industries: ["科技"], themes: ["週年慶"] },
+          { name: "冰磚玻璃禮盒", price: 480, moq: 300, material: "玻璃", tag: "人氣", industries: ["金融"], themes: ["節慶送禮"] }
+        ]);
+        setLoading(false);
+      });
+  }, []);
+
+  const filtered = gifts.filter(g => {
+    const bt = BUDGETS.find(b => b.id === budget).test;
+    return bt(g.price);
+  });
+
+  if (loading) return <div style={{padding:50, textAlign:'center'}}>資料庫同步中...</div>;
+
+  return (
+    <div>
+      <div className="topbar">
+        <div className="wrap">
+          <div className="topbar-inner">
+            <div className="brand"><b>COZU</b><span>禮贈品查詢系統 (Demo)</span></div>
+            <div className="topbar-meta">內部工具 · 資料同步 Google Sheet</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="wrap layout">
+        <div className="rail">
+          <h3>預算篩選</h3>
+          <div className="chips">
+            {BUDGETS.map(b => (
+              <button key={b.id} className={`chip ${budget === b.id ? 'on' : ''}`} onClick={() => setBudget(b.id)}>{b.label}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="content">
+          <div className="grid" style={{"--cols": cols}}>
+            {filtered.map(g => (
+              <div key={g.name} className="card" onClick={() => setOpen(g)}>
+                <div className={`ph r${ratio.replace(':','')}`}>{g.name} 圖片示意</div>
+                <div className="card-body">
+                  <div className="card-name">{g.name}</div>
+                  <div className="card-price">NT${g.price}</div>
+                  <div style={{marginTop:8}}>
+                    <span className="mtag">{g.tag}</span>
+                    <span className="mtag">MOQ {g.moq}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {open && (
+        <>
+          <div className="scrim" onClick={() => setOpen(null)}></div>
+          <div className="peek">
+            <button onClick={() => setOpen(null)}>關閉</button>
+            <h2>{open.name}</h2>
+            <p>價格：NT${open.price}</p>
+            <p>材質：{open.material}</p>
+          </div>
+        </>
+      )}
+
+      <TweaksPanel>
+        <div style={{fontSize:11, marginBottom:5}}>圖片比例</div>
+        <select onChange={(e) => setRatio(e.target.value)} value={ratio}>
+          <option value="4:3">4:3</option>
+          <option value="1:1">1:1</option>
+        </select>
+        <div style={{fontSize:11, marginTop:10, marginBottom:5}}>每列數量</div>
+        <select onChange={(e) => setCols(Number(e.target.value))} value={cols}>
+          <option value="2">2 欄</option>
+          <option value="3">3 欄</option>
+          <option value="4">4 欄</option>
+        </select>
+      </TweaksPanel>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+</body>
+</html>
