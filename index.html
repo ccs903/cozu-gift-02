@@ -30,6 +30,30 @@
     -webkit-font-smoothing:antialiased;
     text-rendering:optimizeLegibility;
   }
+
+  /* ---- 登入畫面 ---- */
+  .login-screen{
+    position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    background:var(--bg);z-index:9999;flex-direction:column;gap:20px;
+  }
+  .login-box{
+    border:1px solid var(--line);border-radius:12px;padding:40px 48px;
+    text-align:center;max-width:360px;width:90%;
+  }
+  .login-box h2{font-size:16px;font-weight:700;margin:0 0 6px;}
+  .login-box p{font-size:12px;color:var(--ink-2);margin:0 0 24px;line-height:1.6;}
+  .login-note{font-size:11px;color:#bcbcbc;margin-top:12px;}
+  .user-bar{
+    position:fixed;top:0;right:0;z-index:100;
+    display:flex;align-items:center;gap:10px;
+    padding:8px 20px;font-size:11px;color:var(--ink-2);
+  }
+  .user-bar img{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);}
+  .user-bar button{
+    border:1px solid var(--line);background:none;border-radius:5px;
+    font-size:11px;color:var(--ink-2);padding:3px 10px;
+  }
+  .user-bar button:hover{background:var(--hover);color:var(--ink);}
   ::selection{background:#e8e8e8;}
   button{font-family:inherit;cursor:pointer;}
   a{color:inherit;}
@@ -163,6 +187,8 @@
   .pill{display:inline-flex;gap:6px;flex-wrap:wrap;}
   .pill span{font-size:11px;border:1px solid var(--line);border-radius:20px;padding:2px 9px;color:var(--ink-2);}
 </style>
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
 <div id="root"></div>
@@ -171,38 +197,10 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <!-- ============================================================
-     data.js — 資料快照 (內嵌)
+     資料來源：Google Sheet (CSV fetch，需 Google 登入)
      ============================================================ -->
 <script>
-/* COZU 禮贈品查詢系統 — 資料快照
- * 來源：Google Sheet「測試」工作表1 (gid=0)
- * 欄位：name, price, priceNote, moq, material, tag(風格), industries(產業), themes(場合)
- * 註：成交客戶紀錄 / NAS 路徑 為 lo-fi 階段示意資料，正式版接 Sheet 對應欄位。
- */
-window.COZU_GIFTS = [
-  { name: "單層杯／雙層杯＋杯墊組", price: 350, priceNote: "依款式調整", moq: 300, material: "玻璃＋毛巾布杯墊", tag: "人氣", industries: ["科技","金融","醫療","其他"], themes: ["週年慶","員工福利","節慶送禮"] },
-  { name: "冰磚玻璃禮盒", price: 480, priceNote: "", moq: 300, material: "玻璃杯x2＋天然石冰磚", tag: "人氣", industries: ["金融","科技","其他"], themes: ["節慶送禮","週年慶","員工福利"] },
-  { name: "香檳杯雙入禮盒", price: 550, priceNote: "", moq: 300, material: "香檳杯x2，精裝盒", tag: "人氣", industries: ["金融","其他"], themes: ["節慶送禮","週年慶"] },
-  { name: "雙層玻璃杯四件組", price: 620, priceNote: "", moq: 300, material: "雙層玻璃杯x4，抽屜盒", tag: "人氣", industries: ["科技","零售","其他"], themes: ["週年慶","員工福利","開幕活動"] },
-  { name: "手感玻璃杯兩入組", price: 420, priceNote: "", moq: 300, material: "手感玻璃杯x2，抽屜盒", tag: "人氣", industries: ["金融","科技","其他"], themes: ["節慶送禮","週年慶"] },
-  { name: "籤筒禮盒組", price: 220, priceNote: "含圓筒柱旋轉盒", moq: 300, material: "啤酒杯＋好運籤6支", tag: "人氣", industries: ["科技","餐飲","零售","其他"], themes: ["尾牙","節慶送禮","開幕活動"] },
-  { name: "義式咖啡杯雙入組", price: 380, priceNote: "", moq: 300, material: "義式咖啡杯x2，圓筒柱旋轉盒", tag: "人氣", industries: ["金融","醫療","其他"], themes: ["節慶送禮","週年慶","員工福利"] },
-  { name: "造型擴香石禮盒組", price: 420, priceNote: "", moq: 300, material: "擴香石（石膏石粉）＋精油", tag: "人氣", industries: ["金融","零售","其他"], themes: ["節慶送禮","開幕活動","週年慶"] },
-  { name: "造型燭台禮盒組", price: 380, priceNote: "", moq: 300, material: "造形水泥＋燭台，抽屜盒", tag: "人氣", industries: ["金融","零售","其他"], themes: ["節慶送禮","開幕活動","週年慶"] },
-  { name: "搖搖樂吊飾", price: 128, priceNote: "含NFC約138元", moq: 500, material: "壓克力＋小物件（會動）", tag: "人氣", industries: ["科技","餐飲","零售","其他"], themes: ["尾牙","新品上市","員工福利"] },
-  { name: "空氣感吊飾", price: 120, priceNote: "含NFC約132元", moq: 500, material: "立體PP＋小光芒裝飾", tag: "人氣", industries: ["科技","餐飲","其他"], themes: ["新品上市","尾牙","開幕活動"] },
-  { name: "祈福御守", price: 150, priceNote: "壓克力版約同價", moq: 500, material: "布料（織標做法）", tag: "人氣", industries: ["金融","醫療","其他"], themes: ["尾牙","節慶送禮","週年慶"] },
-  { name: "壓克力桌飾", price: 180, priceNote: "", moq: 500, material: "壓克力，可依造型客製", tag: "人氣", industries: ["科技","零售","政府機關"], themes: ["新品上市","開幕活動","週年慶"] },
-  { name: "手機夾片掛繩", price: 95, priceNote: "", moq: 500, material: "以現有繩色為主", tag: "人氣", industries: ["科技","零售","餐飲"], themes: ["新品上市","員工福利","尾牙"] },
-  { name: "客製小零錢包", price: 85, priceNote: "", moq: 2000, material: "布料（可客製化討論）", tag: "實用", industries: ["零售","餐飲","其他"], themes: ["尾牙","員工福利","節慶送禮"] },
-  { name: "織紋杯墊", price: 120, priceNote: "", moq: 1000, material: "毛巾布，約11x11cm", tag: "實用", industries: ["科技","金融","零售"], themes: ["員工福利","週年慶","節慶送禮"] },
-  { name: "NFC搖搖樂吊飾", price: 138, priceNote: "含NFC", moq: 500, material: "壓克力＋小物件＋NFC感應", tag: "科技感", industries: ["科技","零售","其他"], themes: ["新品上市","尾牙","開幕活動"] },
-  { name: "NFC空氣感吊飾", price: 132, priceNote: "含NFC", moq: 500, material: "立體PP＋NFC＋壓克力配件", tag: "科技感", industries: ["科技","零售","其他"], themes: ["新品上市","尾牙"] },
-  { name: "肩背袋（泰維克）", price: 230, priceNote: "彩色印刷", moq: 500, material: "泰維克，可依尺寸客製", tag: "環保", industries: ["科技","政府機關","其他"], themes: ["新品上市","週年慶","開幕活動"] },
-  { name: "好運杯禮盒", price: 220, priceNote: "含圓柱籤筒包裝", moq: 300, material: "玻璃杯＋好運籤6支", tag: "環保", industries: ["科技","餐飲","零售","其他"], themes: ["尾牙","節慶送禮","開幕活動"] }
-];
-
-/* 材質歸類規則（關鍵字 → 篩選分類） */
+/* 材質歸類規則 */
 window.COZU_MATERIAL_RULES = [
   ["玻璃",    /玻璃|香檳杯|咖啡杯|啤酒杯/],
   ["壓克力",  /壓克力/],
@@ -212,7 +210,6 @@ window.COZU_MATERIAL_RULES = [
   ["泰維克",  /泰維克/],
   ["NFC",     /NFC/]
 ];
-
 window.COZU_MATERIAL_OPTIONS = ["玻璃","壓克力","布料織品","石材水泥","PP","泰維克","NFC"];
 window.COZU_THEME_OPTIONS    = ["週年慶","員工福利","節慶送禮","尾牙","新品上市","開幕活動"];
 window.COZU_INDUSTRY_OPTIONS = ["科技","金融","醫療","零售","餐飲","政府機關","其他"];
@@ -222,21 +219,71 @@ window.cozuMaterials = function(materialText){
   return window.COZU_MATERIAL_RULES.filter(([,re]) => re.test(materialText)).map(([k]) => k);
 };
 
-/* 成交客戶紀錄 / NAS 路徑：lo-fi 示意資料（依產業×場合生成） */
-window.COZU_COMPANY_BY_IND = {
-  "科技":"某科技公司","金融":"某金融業客戶","醫療":"某醫療機構","零售":"某零售品牌",
-  "餐飲":"某餐飲集團","政府機關":"某政府單位","其他":"某企業客戶"
-};
 window.cozuDealRecords = function(g){
-  const years = [2025, 2024, 2023];
-  const inds = g.industries.slice(0, 3);
-  return inds.map((ind, i) => ({
-    company: window.COZU_COMPANY_BY_IND[ind] || "某企業客戶",
-    occasion: g.themes[i % g.themes.length],
-    year: years[i % years.length]
-  }));
+  if (!g.deals) return [];
+  return g.deals.trim().split("\n")
+    .map(line => line.trim()).filter(Boolean)
+    .map(line => {
+      const [company, occasion, year] = line.split("|");
+      return { company: company||"", occasion: occasion||"", year: year||"" };
+    });
 };
 
+window.COZU_GIFTS = [];
+window.COZU_DATA_READY = false;
+window.COZU_USER = null;   // { name, email, picture } 登入後設定
+
+/* ── 載入 Sheet 資料（需先登入） ── */
+window.loadSheetData = async function(){
+  const SHEET_CSV = "https://docs.google.com/spreadsheets/d/1ElYuyhmYM7GGUIdx1h93AiIqSISDbzaO15CN_goIx9A/export?format=csv&gid=0";
+  try {
+    const res  = await fetch(SHEET_CSV);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const text = await res.text();
+    const rows = text.trim().split("\n").map(r => parseCSVRow(r));
+    const header = rows[0];
+    window.COZU_GIFTS = rows.slice(1)
+      .filter(r => r[0] && r[0].trim())
+      .map(r => {
+        const get = (col) => (r[header.indexOf(col)] || "").trim();
+        return {
+          name      : get("name"),
+          price     : Number(get("price")) || 0,
+          priceNote : get("priceNote"),
+          moq       : Number(get("moq"))   || 0,
+          material  : get("material"),
+          tag       : get("tag"),
+          industries: get("industries").split(",").map(s=>s.trim()).filter(Boolean),
+          themes    : get("themes").split(",").map(s=>s.trim()).filter(Boolean),
+          nas_path  : get("nas_path"),
+          slide_url : get("slide_url"),
+          image_url : get("image_url"),
+          deals     : get("deals"),
+        };
+      });
+    window.COZU_DATA_READY = true;
+    window.dispatchEvent(new Event("cozu:ready"));
+  } catch(e) {
+    console.error("Sheet 載入失敗", e);
+    window.dispatchEvent(new CustomEvent("cozu:error", {detail: e.message}));
+  }
+};
+
+function parseCSVRow(row) {
+  const result = [];
+  let cur = "", inQ = false;
+  for (let i = 0; i < row.length; i++) {
+    const c = row[i];
+    if (c === '"') {
+      if (inQ && row[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (c === ',' && !inQ) {
+      result.push(cur); cur = "";
+    } else { cur += c; }
+  }
+  result.push(cur);
+  return result;
+}
 </script>
 
 <!-- ============================================================
@@ -746,7 +793,7 @@ const IcoTrophy = (p) => <Ico {...p} d={<><path d="M8 21h8M12 17v4M7 4h10v5a5 5 
 const Check = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>;
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "ratio": "4:3",
+  "ratio": "1:1",
   "cols": 3,
   "showImage": true
 }/*EDITMODE-END*/;
@@ -808,8 +855,11 @@ function Card({ g, t, onOpen }) {
     <button className="card" onClick={() => onOpen(g)}>
       {t.showImage && (
         <div className={"ph " + (t.ratio === "1:1" ? "r11" : "r43")}>
-          <PhCross />
-          <span className="ph-label">產品圖片 {t.ratio}</span>
+          {g.image_url
+            ? <img src={g.image_url} alt={g.name}
+                   style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}} />
+            : <><PhCross /><span className="ph-label">尚未上傳圖片</span></>
+          }
         </div>
       )}
       <div className="card-body">
@@ -834,7 +884,7 @@ function Peek({ g, onClose }) {
   if (!g) return null;
   const mats = window.cozuMaterials(g.material);
   const deals = window.cozuDealRecords(g);
-  const nas = `\\\\COZU-NAS\\提案資料\\禮贈品\\${g.name}`;
+  const nas = g.nas_path || `\\\\COZU-NAS\\提案資料\\禮贈品\\${g.name}`;
   return (
     <>
       <div className="scrim" onClick={onClose}></div>
@@ -844,7 +894,13 @@ function Peek({ g, onClose }) {
               <button className="x" onClick={onClose}>✕</button>
             </div>
             <div className="peek-body">
-              <div className="peek-img"><PhCross /><span style={{position:"relative"}}>產品圖片　4:3</span></div>
+              <div className="peek-img" style={{overflow:"hidden"}}>
+              {g.image_url
+                ? <img src={g.image_url} alt={g.name}
+                       style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",borderRadius:"var(--radius)"}} />
+                : <><PhCross /><span style={{position:"relative"}}>尚未上傳圖片</span></>
+              }
+            </div>
               <h3>{g.name}</h3>
               <div className="price-lg">NT${g.price}{g.priceNote && <span className="note">{g.priceNote}</span>}</div>
 
@@ -880,7 +936,7 @@ function Peek({ g, onClose }) {
                   <span>{nas}</span>
                   <button className="copy" onClick={() => { navigator.clipboard?.writeText(nas); setCopied(true); setTimeout(()=>setCopied(false),1200); }}>{copied ? "已複製" : "複製"}</button>
                 </div>
-                <a className="slidelink" href="#" onClick={e=>e.preventDefault()}>
+                <a className="slidelink" href={g.slide_url || "#"} target={g.slide_url ? "_blank" : "_self"} rel="noopener noreferrer" onClick={!g.slide_url ? e=>e.preventDefault() : undefined}>
                   <IcoBox width="15" height="15" /> 開啟過往提案簡報（雲端）
                 </a>
                 <p className="note-illus">成交紀錄、NAS 路徑與簡報連結為 lo-fi 階段示意資料，正式版將連動 Google Sheet 對應欄位。</p>
@@ -894,8 +950,57 @@ function Peek({ g, onClose }) {
 /* ---------- app ---------- */
 function toggleIn(set, v) { const n = new Set(set); n.has(v) ? n.delete(v) : n.add(v); return n; }
 
+function LoadingScreen() {
+  return (
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",
+                 height:"60vh",flexDirection:"column",gap:"12px",color:"var(--ink-2)"}}>
+      <div style={{fontSize:"13px"}}>正在從 Google Sheet 載入商品資料⋯</div>
+    </div>
+  );
+}
+function ErrorScreen({msg}) {
+  return (
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",
+                 height:"60vh",flexDirection:"column",gap:"12px",color:"#c0392b"}}>
+      <div style={{fontSize:"14px",fontWeight:700}}>資料載入失敗</div>
+      <div style={{fontSize:"12px",color:"var(--ink-2)"}}>{msg}</div>
+      <div style={{fontSize:"11px",color:"var(--ink-2)"}}>請確認 Google Sheet 已設為「發布到網路」</div>
+    </div>
+  );
+}
+
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [user, setUser] = useState(window.COZU_USER || null);
+  const [dataReady, setDataReady] = useState(window.COZU_DATA_READY || false);
+  const [dataError, setDataError] = useState(null);
+
+  React.useEffect(() => {
+    if (window.COZU_DATA_READY) { setDataReady(true); return; }
+    const onReady = () => setDataReady(true);
+    const onError = (e) => setDataError(e.detail || "未知錯誤");
+    window.addEventListener("cozu:ready", onReady);
+    window.addEventListener("cozu:error", onError);
+    return () => {
+      window.removeEventListener("cozu:ready", onReady);
+      window.removeEventListener("cozu:error", onError);
+    };
+  }, []);
+
+  const handleLogin = (u) => setUser(u);
+  const handleLogout = () => {
+    window.google?.accounts.id.disableAutoSelect();
+    window.COZU_USER = null;
+    window.COZU_DATA_READY = false;
+    window.COZU_GIFTS = [];
+    setUser(null);
+    setDataReady(false);
+    setDataError(null);
+  };
+
+  if (!user) return <LoginScreen onLogin={handleLogin} />;
+  if (dataError) return <ErrorScreen msg={dataError} />;
+  if (!dataReady) return <LoadingScreen />;
   const [entry, setEntry] = useState("gift");
   const [mats, setMats] = useState(new Set());
   const [themes, setThemes] = useState(new Set());
@@ -946,6 +1051,7 @@ function App() {
 
   return (
     <>
+      <UserBar user={user} onLogout={handleLogout} />
       <div className="topbar">
         <div className="wrap">
           <div className="topbar-inner">
