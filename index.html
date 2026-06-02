@@ -962,12 +962,10 @@ function App() {
     };
   }, []);
 
-  if (dataError) return <ErrorScreen msg={dataError} />;
-  if (!dataReady) return <LoadingScreen />;
-
   const all = window.COZU_GIFTS;
 
   const counts = useMemo(() => {
+    if (!dataReady) return { mat:{}, theme:{}, ind:{}, tag:{} };
     const c = { mat:{}, theme:{}, ind:{}, tag:{} };
     all.forEach(g => {
       window.cozuMaterials(g.material).forEach(m => c.mat[m] = (c.mat[m]||0)+1);
@@ -976,9 +974,10 @@ function App() {
       c.tag[g.tag] = (c.tag[g.tag]||0)+1;
     });
     return c;
-  }, [all]);
+  }, [all, dataReady]);
 
   const results = useMemo(() => {
+    if (!dataReady) return [];
     const bt = BUDGETS.find(b => b.id === budget).test;
     const mmax = MOQS.find(m => m.id === moq).max;
     return all.filter(g => {
@@ -990,7 +989,10 @@ function App() {
       if (g.moq > mmax) return false;
       return true;
     });
-  }, [all, mats, themes, inds, tags, budget, moq]);
+  }, [all, dataReady, mats, themes, inds, tags, budget, moq]);
+
+  if (dataError) return <ErrorScreen msg={dataError} />;
+  if (!dataReady) return <LoadingScreen />;
 
   const activeCount = mats.size + themes.size + inds.size + tags.size + (budget!=="all"?1:0) + (moq!=="all"?1:0);
   const clearAll = () => { setMats(new Set()); setThemes(new Set()); setInds(new Set()); setTags(new Set()); setBudget("all"); setMoq("all"); };
