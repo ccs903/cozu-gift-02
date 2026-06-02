@@ -716,12 +716,12 @@ function parseGviz(json) {
       const i = cols.indexOf(k);
       return (i >= 0 && row.c[i]) ? String(row.c[i].v).trim() : '';
     };
-    // deals: 每行格式「公司名稱|場合|年份」
-    const dealsRaw = get('deals');
-    const deals = dealsRaw
-      ? dealsRaw.trim().split('\n').map(l => {
-          const [company='', occasion='', year=''] = l.trim().split('|');
-          return { company, occasion, year };
+    // proposals: 每行格式「公司名稱|場合|年份|簡報URL（可空）」
+    const proposalsRaw = get('proposals');
+    const proposals = proposalsRaw
+      ? proposalsRaw.trim().split('\n').map(l => {
+          const [company='', occasion='', year='', slide_url=''] = l.trim().split('|');
+          return { company, occasion, year, slide_url: slide_url.trim() };
         }).filter(d => d.company)
       : [];
 
@@ -735,9 +735,8 @@ function parseGviz(json) {
       industries: get('industries').split(',').map(s => s.trim()).filter(Boolean),
       themes    : get('themes').split(',').map(s => s.trim()).filter(Boolean),
       nas_path  : get('nas_path'),
-      slide_url : get('slide_url'),
       image_url : get('image_url'),
-      deals,
+      proposals,
     };
   }).filter(p => p.name);
 }
@@ -888,13 +887,13 @@ function render() {
     const tagsHtml = [...(mats.length ? mats : ['—']).slice(0,2), p.tag]
       .map(t => `<span class="mtag">${t}</span>`).join('');
 
-    const dealCount = p.deals.length;
-    const dealBadge = dealCount > 0
+    const propCount = p.proposals.length;
+    const dealBadge = propCount > 0
       ? `<span class="deal-badge">
            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
              <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
            </svg>
-           ${dealCount} 筆成交紀錄
+           ${propCount} 筆提案紀錄
          </span>`
       : '';
 
@@ -929,31 +928,30 @@ function clearAll() {
 // Slide-over
 // ════════════════════════════════════
 function openPeek(p) {
-  const mats  = getMats(p.material);
-  const nas   = p.nas_path || `\\\\COZU-NAS\\提案資料\\禮贈品\\${p.name}`;
-  const deals = p.deals;
+  const mats      = getMats(p.material);
+  const nas        = p.nas_path || `\\\\COZU-NAS\\提案資料\\禮贈品\\${p.name}`;
+  const proposals  = p.proposals;
 
   const imgHtml = p.image_url
     ? `<img src="${p.image_url}" alt="${p.name}" />`
     : `<svg style="position:absolute;inset:0;width:100%;height:100%;color:#e2e2e2" viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="0" y1="0" x2="100" y2="100" stroke="currentColor" stroke-width="1"/><line x1="100" y1="0" x2="0" y2="100" stroke="currentColor" stroke-width="1"/></svg><span style="position:relative;font-size:10px;color:#bbb;">尚未上傳圖片</span>`;
 
-  const dealsHtml = deals.length > 0
-    ? deals.map(d => `
+  const proposalsHtml = proposals.length > 0
+    ? proposals.map(d => `
         <div class="deal-row">
           <span class="deal-co">${d.company}</span>
           <span class="deal-occ">· ${d.occasion}</span>
           <span class="deal-yr">${d.year}</span>
+          ${d.slide_url
+            ? `<a class="slide-link" href="${d.slide_url}" target="_blank" rel="noopener noreferrer" style="margin-top:0;padding:3px 8px;font-size:11px;">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px;">
+                   <path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>
+                 </svg>
+                 簡報
+               </a>`
+            : ''}
         </div>`).join('')
-    : `<div class="deal-empty">尚無成交紀錄</div>`;
-
-  const slideHtml = p.slide_url
-    ? `<a class="slide-link" href="${p.slide_url}" target="_blank" rel="noopener noreferrer">
-         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-           <path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>
-         </svg>
-         開啟過往提案簡報（雲端）
-       </a>`
-    : `<div style="font-size:11px;color:#bbb;margin-top:8px;">尚未連結雲端簡報</div>`;
+    : `<div class="deal-empty">尚無提案紀錄</div>`;
 
   document.getElementById('peekBody').innerHTML = `
     <div class="peek-img">${imgHtml}</div>
@@ -982,8 +980,8 @@ function openPeek(p) {
     </div>
 
     <div class="dl">
-      <div class="dl-title">成交客戶紀錄</div>
-      ${dealsHtml}
+      <div class="dl-title">提案紀錄</div>
+      ${proposalsHtml}
     </div>
 
     <div class="dl">
@@ -992,8 +990,7 @@ function openPeek(p) {
         <span class="nas-path" id="nasPath">${nas}</span>
         <button class="copy-btn" id="copyBtn" onclick="copyNas('${nas.replace(/'/g,"\\'")}')">複製</button>
       </div>
-      ${slideHtml}
-      <p class="peek-note">成交紀錄、NAS 路徑與簡報連結為 lo-fi 示意資料，正式版將連動 Google Sheet 對應欄位。</p>
+      <p class="peek-note">提案紀錄、NAS 路徑與簡報連結為 lo-fi 示意資料，正式版將連動 Google Sheet 對應欄位。</p>
     </div>`;
 
   document.getElementById('scrim').style.display = 'block';
