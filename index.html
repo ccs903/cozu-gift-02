@@ -208,16 +208,19 @@ window.COZU_GIFTS = [];
 window.COZU_DATA_READY = false;
 
 (async function loadSheet(){
-  const SHEET_ID   = "1ElYuyhmYM7GGUIdx1h93AiIqSISDbzaO15CN_goIx9A";
-  const SHEET_NAME = "工作表1";   // ← 你的工作表名稱，預設是工作表1
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+  const SHEET_ID = "1ElYuyhmYM7GGUIdx1h93AiIqSISDbzaO15CN_goIx9A";
+  // gid=0 代表第一張工作表，不受工作表名稱影響
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=0`;
 
   try {
     const res  = await fetch(url);
     if (!res.ok) throw new Error("HTTP " + res.status);
     const text = await res.text();
-    // gviz 回傳的不是純 JSON，前後有包裝，要先剝掉
-    const json = JSON.parse(text.replace(/^[^{]*/, '').replace(/[^}]*$/, ''));
+    // gviz 回傳格式：/*O_o*/\ngoogle.visualization.Query.setResponse({...});
+    // 要把前後包裝剝掉才能 JSON.parse
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+    if (!match) throw new Error("gviz 回傳格式非預期：" + text.slice(0, 100));
+    const json = JSON.parse(match[1]);
     const cols = json.table.cols.map(c => c.label);
     const rows = json.table.rows;
 
