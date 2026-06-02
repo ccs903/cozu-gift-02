@@ -30,30 +30,6 @@
     -webkit-font-smoothing:antialiased;
     text-rendering:optimizeLegibility;
   }
-
-  /* ---- 登入畫面 ---- */
-  .login-screen{
-    position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-    background:var(--bg);z-index:9999;flex-direction:column;gap:20px;
-  }
-  .login-box{
-    border:1px solid var(--line);border-radius:12px;padding:40px 48px;
-    text-align:center;max-width:360px;width:90%;
-  }
-  .login-box h2{font-size:16px;font-weight:700;margin:0 0 6px;}
-  .login-box p{font-size:12px;color:var(--ink-2);margin:0 0 24px;line-height:1.6;}
-  .login-note{font-size:11px;color:#bcbcbc;margin-top:12px;}
-  .user-bar{
-    position:fixed;top:0;right:0;z-index:100;
-    display:flex;align-items:center;gap:10px;
-    padding:8px 20px;font-size:11px;color:var(--ink-2);
-  }
-  .user-bar img{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);}
-  .user-bar button{
-    border:1px solid var(--line);background:none;border-radius:5px;
-    font-size:11px;color:var(--ink-2);padding:3px 10px;
-  }
-  .user-bar button:hover{background:var(--hover);color:var(--ink);}
   ::selection{background:#e8e8e8;}
   button{font-family:inherit;cursor:pointer;}
   a{color:inherit;}
@@ -187,8 +163,6 @@
   .pill{display:inline-flex;gap:6px;flex-wrap:wrap;}
   .pill span{font-size:11px;border:1px solid var(--line);border-radius:20px;padding:2px 9px;color:var(--ink-2);}
 </style>
-<!-- Google Identity Services -->
-<script src="https://accounts.google.com/gsi/client" async></script>
 </head>
 <body>
 <div id="root"></div>
@@ -197,10 +171,11 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <!-- ============================================================
-     資料來源：Google Sheet (CSV fetch，需 Google 登入)
+     資料來源：Google Sheet (gviz/tq — 不需發布到網路)
+     欄位：name, price, priceNote, moq, material, tag,
+           industries, themes, nas_path, slide_url, image_url, deals
      ============================================================ -->
 <script>
-/* 材質歸類規則 */
 window.COZU_MATERIAL_RULES = [
   ["玻璃",    /玻璃|香檳杯|咖啡杯|啤酒杯/],
   ["壓克力",  /壓克力/],
@@ -231,59 +206,49 @@ window.cozuDealRecords = function(g){
 
 window.COZU_GIFTS = [];
 window.COZU_DATA_READY = false;
-window.COZU_USER = null;   // { name, email, picture } 登入後設定
 
-/* ── 載入 Sheet 資料（需先登入） ── */
-window.loadSheetData = async function(){
-  const SHEET_CSV = "https://docs.google.com/spreadsheets/d/1ElYuyhmYM7GGUIdx1h93AiIqSISDbzaO15CN_goIx9A/export?format=csv&gid=0";
+(async function loadSheet(){
+  const SHEET_ID   = "1ElYuyhmYM7GGUIdx1h93AiIqSISDbzaO15CN_goIx9A";
+  const SHEET_NAME = "工作表1";   // ← 你的工作表名稱，預設是工作表1
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
   try {
-    const res  = await fetch(SHEET_CSV);
+    const res  = await fetch(url);
     if (!res.ok) throw new Error("HTTP " + res.status);
     const text = await res.text();
-    const rows = text.trim().split("\n").map(r => parseCSVRow(r));
-    const header = rows[0];
-    window.COZU_GIFTS = rows.slice(1)
-      .filter(r => r[0] && r[0].trim())
-      .map(r => {
-        const get = (col) => (r[header.indexOf(col)] || "").trim();
-        return {
-          name      : get("name"),
-          price     : Number(get("price")) || 0,
-          priceNote : get("priceNote"),
-          moq       : Number(get("moq"))   || 0,
-          material  : get("material"),
-          tag       : get("tag"),
-          industries: get("industries").split(",").map(s=>s.trim()).filter(Boolean),
-          themes    : get("themes").split(",").map(s=>s.trim()).filter(Boolean),
-          nas_path  : get("nas_path"),
-          slide_url : get("slide_url"),
-          image_url : get("image_url"),
-          deals     : get("deals"),
-        };
-      });
+    // gviz 回傳的不是純 JSON，前後有包裝，要先剝掉
+    const json = JSON.parse(text.replace(/^[^{]*/, '').replace(/[^}]*$/, ''));
+    const cols = json.table.cols.map(c => c.label);
+    const rows = json.table.rows;
+
+    window.COZU_GIFTS = rows.map(row => {
+      const get = (key) => {
+        const i = cols.indexOf(key);
+        return (i >= 0 && row.c[i]) ? String(row.c[i].v).trim() : '';
+      };
+      return {
+        name      : get("name"),
+        price     : parseFloat(get("price")) || 0,
+        priceNote : get("priceNote"),
+        moq       : parseInt(get("moq"))   || 0,
+        material  : get("material"),
+        tag       : get("tag"),
+        industries: get("industries").split(",").map(s=>s.trim()).filter(Boolean),
+        themes    : get("themes").split(",").map(s=>s.trim()).filter(Boolean),
+        nas_path  : get("nas_path"),
+        slide_url : get("slide_url"),
+        image_url : get("image_url"),
+        deals     : get("deals"),
+      };
+    }).filter(p => p.name);
+
     window.COZU_DATA_READY = true;
     window.dispatchEvent(new Event("cozu:ready"));
   } catch(e) {
-    console.error("Sheet 載入失敗", e);
+    console.error("Google Sheet 載入失敗", e);
     window.dispatchEvent(new CustomEvent("cozu:error", {detail: e.message}));
   }
-};
-
-function parseCSVRow(row) {
-  const result = [];
-  let cur = "", inQ = false;
-  for (let i = 0; i < row.length; i++) {
-    const c = row[i];
-    if (c === '"') {
-      if (inQ && row[i+1] === '"') { cur += '"'; i++; }
-      else inQ = !inQ;
-    } else if (c === ',' && !inQ) {
-      result.push(cur); cur = "";
-    } else { cur += c; }
-  }
-  result.push(cur);
-  return result;
-}
+})();
 </script>
 
 <!-- ============================================================
@@ -971,7 +936,6 @@ function ErrorScreen({msg}) {
 
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
-  const [user, setUser] = useState(window.COZU_USER || null);
   const [dataReady, setDataReady] = useState(window.COZU_DATA_READY || false);
   const [dataError, setDataError] = useState(null);
 
@@ -986,19 +950,6 @@ function App() {
       window.removeEventListener("cozu:error", onError);
     };
   }, []);
-
-  const handleLogin = (u) => setUser(u);
-  const handleLogout = () => {
-    window.google?.accounts.id.disableAutoSelect();
-    window.COZU_USER = null;
-    window.COZU_DATA_READY = false;
-    window.COZU_GIFTS = [];
-    setUser(null);
-    setDataReady(false);
-    setDataError(null);
-  };
-
-  if (!user) return <LoginScreen onLogin={handleLogin} />;
   if (dataError) return <ErrorScreen msg={dataError} />;
   if (!dataReady) return <LoadingScreen />;
   const [entry, setEntry] = useState("gift");
@@ -1051,7 +1002,6 @@ function App() {
 
   return (
     <>
-      <UserBar user={user} onLogout={handleLogout} />
       <div className="topbar">
         <div className="wrap">
           <div className="topbar-inner">
