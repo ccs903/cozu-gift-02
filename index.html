@@ -941,6 +941,14 @@ function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [dataReady, setDataReady] = useState(window.COZU_DATA_READY || false);
   const [dataError, setDataError] = useState(null);
+  const [entry, setEntry] = useState("gift");
+  const [mats, setMats] = useState(new Set());
+  const [themes, setThemes] = useState(new Set());
+  const [inds, setInds] = useState(new Set());
+  const [tags, setTags] = useState(new Set());
+  const [budget, setBudget] = useState("all");
+  const [moq, setMoq] = useState("all");
+  const [open, setOpen] = useState(null);
 
   React.useEffect(() => {
     if (window.COZU_DATA_READY) { setDataReady(true); return; }
@@ -953,16 +961,9 @@ function App() {
       window.removeEventListener("cozu:error", onError);
     };
   }, []);
+
   if (dataError) return <ErrorScreen msg={dataError} />;
   if (!dataReady) return <LoadingScreen />;
-  const [entry, setEntry] = useState("gift");
-  const [mats, setMats] = useState(new Set());
-  const [themes, setThemes] = useState(new Set());
-  const [inds, setInds] = useState(new Set());
-  const [tags, setTags] = useState(new Set());
-  const [budget, setBudget] = useState("all");
-  const [moq, setMoq] = useState("all");
-  const [open, setOpen] = useState(null);
 
   const all = window.COZU_GIFTS;
 
