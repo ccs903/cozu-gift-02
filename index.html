@@ -157,8 +157,11 @@
   .nas{font-size:11.5px;background:var(--bg-soft);border:1px solid var(--line);border-radius:6px;padding:9px 11px;color:var(--ink);font-family:"Mulish",monospace;word-break:break-all;display:flex;align-items:center;gap:8px;}
   .nas .copy{margin-left:auto;flex:none;border:1px solid var(--line);background:var(--bg);border-radius:5px;font-size:10.5px;padding:3px 8px;color:var(--ink-2);}
   .nas .copy:hover{background:var(--hover);color:var(--ink);}
-  .slidelink{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-top:8px;}
+  .slidelinks{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+  .slidelink{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:8px 12px;}
   .slidelink:hover{background:var(--hover);}
+  .slidelink .slide-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .slidelink .slide-badge{font-size:10.5px;color:var(--ink-2);background:var(--bg-soft);border:1px solid var(--line);border-radius:4px;padding:1px 6px;white-space:nowrap;flex-shrink:0;}
   .note-illus{font-size:10.5px;color:#bcbcbc;margin-top:10px;line-height:1.5;}
   .pill{display:inline-flex;gap:6px;flex-wrap:wrap;}
   .pill span{font-size:11px;border:1px solid var(--line);border-radius:20px;padding:2px 9px;color:var(--ink-2);}
@@ -239,7 +242,16 @@ window.COZU_DATA_READY = false;
         industries: get("industries").split(",").map(s=>s.trim()).filter(Boolean),
         themes    : get("themes").split(",").map(s=>s.trim()).filter(Boolean),
         nas_path  : get("nas_path"),
-        slide_url : get("slide_url"),
+        slide_urls: get("slide_url").split("\n")
+          .map(line => {
+            const trimmed = line.trim();
+            if (!trimmed) return null;
+            // 格式：https://...（說明文字） 或純網址
+            const m = trimmed.match(/^(https?:\/\/[^\s（(]+)[（(]([^）)]+)[）)]?$/);
+            if (m) return { url: m[1].trim(), label: m[2].trim() };
+            return { url: trimmed, label: "" };
+          })
+          .filter(Boolean),
         image_url : get("image_url"),
         deals     : get("deals"),
       };
@@ -904,9 +916,23 @@ function Peek({ g, onClose }) {
                   <span>{nas}</span>
                   <button className="copy" onClick={() => { navigator.clipboard?.writeText(nas); setCopied(true); setTimeout(()=>setCopied(false),1200); }}>{copied ? "已複製" : "複製"}</button>
                 </div>
-                <a className="slidelink" href={g.slide_url || "#"} target={g.slide_url ? "_blank" : "_self"} rel="noopener noreferrer" onClick={!g.slide_url ? e=>e.preventDefault() : undefined}>
-                  <IcoBox width="15" height="15" /> 開啟過往提案簡報（雲端）
-                </a>
+                {g.slide_urls && g.slide_urls.length > 0 ? (
+                  <div className="slidelinks">
+                    {g.slide_urls.map((s, i) => (
+                      <a key={i} className="slidelink" href={s.url} target="_blank" rel="noopener noreferrer">
+                        <IcoBox width="15" height="15" />
+                        <span className="slide-label">提案簡報{g.slide_urls.length > 1 ? `（${i+1}/${g.slide_urls.length}）` : ""}</span>
+                        {s.label && <span className="slide-badge">{s.label}</span>}
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="slidelinks">
+                    <span className="slidelink" style={{color:"var(--ink-2)",cursor:"default"}}>
+                      <IcoBox width="15" height="15" /> 尚無簡報連結
+                    </span>
+                  </div>
+                )}
                 <p className="note-illus">成交紀錄、NAS 路徑與簡報連結為 lo-fi 階段示意資料，正式版將連動 Google Sheet 對應欄位。</p>
               </div>
             </div>
