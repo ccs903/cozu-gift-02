@@ -662,12 +662,13 @@ const MAT_RULES = [
   ['NFC',     /NFC/],
 ];
 
+// 預算篩選：price_min ≤ 上限 → 偏寬鬆，讓業務靠 priceNote 自行判斷
 const BUDGET_OPTS = [
-  { id: 'all',     label: '不限',        test: () => true },
-  { id: 'u150',    label: 'NT$150 以下', test: p => p <= 150 },
-  { id: '150-300', label: 'NT$150–300',  test: p => p > 150 && p <= 300 },
-  { id: '300-500', label: 'NT$300–500',  test: p => p > 300 && p <= 500 },
-  { id: 'o500',    label: 'NT$500 以上', test: p => p > 500 },
+  { id: 'all',     label: '不限',        maxPrice: Infinity, minPrice: 0 },
+  { id: 'u150',    label: 'NT$150 以下', maxPrice: 150,      minPrice: 0 },
+  { id: '150-300', label: 'NT$150–300',  maxPrice: 300,      minPrice: 150 },
+  { id: '300-500', label: 'NT$300–500',  maxPrice: 500,      minPrice: 300 },
+  { id: 'o500',    label: 'NT$500 以上', maxPrice: Infinity, minPrice: 500 },
 ];
 const MOQ_OPTS = [
   { id: 'all',  label: '不限',  max: Infinity },
@@ -725,9 +726,13 @@ function parseGviz(json) {
         }).filter(d => d.company)
       : [];
 
+    const priceMax = parseFloat(get('price_max')) || parseFloat(get('price')) || 0;
+    const priceMin = parseFloat(get('price_min')) || priceMax;
     return {
       name      : get('name'),
-      price     : parseFloat(get('price')) || 0,
+      price     : priceMax,       // 顯示用（報價表最低MOQ對應單價）
+      price_max : priceMax,       // 顯示用，同上
+      price_min : priceMin,       // 篩選用（大量時的最低單價）
       priceNote : get('priceNote'),
       moq       : parseInt(get('moq')) || 0,
       material  : get('material'),
@@ -748,8 +753,13 @@ function getMats(material) {
 // ════════════════════════════════════
 // 篩選邏輯
 // ════════════════════════════════════
-function matchBudget(price) {
-  return BUDGET_OPTS.find(b => b.id === selBudget).test(price);
+// price_min ≤ 上限：大量時有機會壓到預算 → 偏寬鬆，業務靠 priceNote 自判
+// NT$500以上：price_max ≥ 500，確保高單價商品能被找到
+function matchBudget(p) {
+  const opt = BUDGET_OPTS.find(b => b.id === selBudget);
+  if (opt.id === 'all')  return true;
+  if (opt.id === 'o500') return p.price_max >= 500;
+  return p.price_min <= opt.maxPrice;
 }
 function matchMoq(moq) {
   return moq <= MOQ_OPTS.find(m => m.id === selMoq).max;
@@ -760,7 +770,7 @@ function getFiltered() {
     if (selThemes.size && !p.themes.some(t => selThemes.has(t)))            return false;
     if (selInds.size   && !p.industries.some(i => selInds.has(i)))          return false;
     if (selTags.size   && !selTags.has(p.tag))                              return false;
-    if (!matchBudget(p.price))                                              return false;
+    if (!matchBudget(p))                                                    return false;
     if (!matchMoq(p.moq))                                                   return false;
     return true;
   });
