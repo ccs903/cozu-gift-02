@@ -266,9 +266,9 @@ a { color: inherit; text-decoration: none; }
 }
 
 .card-body { padding: 12px 13px 13px; flex: 1; display: flex; flex-direction: column; }
-.card-name-row { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
+.card-name-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
 .card-name { font-size: 14px; font-weight: 600; line-height: 1.35; }
-.card-name-mats { display: flex; gap: 3px; flex-wrap: wrap; align-items: center; padding-top: 2px; }
+.card-name-mats { display: flex; gap: 3px; flex-wrap: wrap; align-items: center; }
 .card-price { margin-bottom: 9px; }
 .card-price-row { display: flex; align-items: baseline; gap: 8px; }
 .card-price-main { font-size: 13px; font-weight: 700; }
@@ -283,6 +283,7 @@ a { color: inherit; text-decoration: none; }
   padding: 1px 6px;
   white-space: nowrap;
 }
+.mtag-mat { background: #232A31; color: #fff; border-color: #232A31; }
 .card-meta {
   font-size: 11px;
   color: var(--ink-2);
@@ -618,7 +619,7 @@ a { color: inherit; text-decoration: none; }
 
     <!-- 風格 -->
     <div class="fgroup">
-      <div class="fgroup-title">風格標籤</div>
+      <div class="fgroup-title">標籤</div>
       <div id="tagOpts"></div>
     </div>
   </aside>
@@ -940,7 +941,7 @@ function render() {
       <div class="card-body">
         <div class="card-name-row">
           <span class="card-name">${p.name}</span>
-          <span class="card-name-mats">${(mats.length ? mats : []).slice(0,2).map(m => `<span class="mtag">${m}</span>`).join('')}</span>
+          <span class="card-name-mats">${(mats.length ? mats : []).slice(0,2).map(m => `<span class="mtag mtag-mat">${m}</span>`).join('')}</span>
         </div>
         <div class="card-price">
           <div class="card-price-row">
