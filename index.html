@@ -287,16 +287,17 @@ a { color: inherit; text-decoration: none; }
   font-size: 11px;
   color: var(--ink-2);
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 6px;
   flex-wrap: wrap;
 }
+.meta-sep { color: var(--line); }
 .card-tag-row {
-  margin-top: auto;
+  margin-top: 8px;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
-.mtag-style { font-style: italic; }
 .deal-badge {
   display: inline-flex;
   align-items: center;
@@ -937,7 +938,10 @@ function render() {
     card.innerHTML = `
       <div class="card-img">${imgHtml}</div>
       <div class="card-body">
-        <p class="card-name">${p.name}</p>
+        <div class="card-name-row">
+          <span class="card-name">${p.name}</span>
+          <span class="card-name-mats">${(mats.length ? mats : []).slice(0,2).map(m => `<span class="mtag">${m}</span>`).join('')}</span>
+        </div>
         <div class="card-price">
           <div class="card-price-row">
             <span class="card-price-main">NT$${p.price_max}</span>
@@ -946,11 +950,11 @@ function render() {
         </div>
         <div class="card-meta">
           <span>MOQ ${p.moq.toLocaleString()}</span>
+          ${propCount > 0 ? `<span class="meta-sep">•</span><span>${propCount} 筆提案</span>` : ''}
         </div>
         <div class="card-tag-row">
           ${p.themes.slice(0,2).map(t => `<span class="mtag">${t}</span>`).join('')}
-          ${p.tag ? `<span class="mtag mtag-style">${p.tag}</span>` : ''}
-          ${dealBadge}
+          ${p.tag ? `<span class="mtag">${p.tag}</span>` : ''}
         </div>
       </div>`;
     grid.appendChild(card);
