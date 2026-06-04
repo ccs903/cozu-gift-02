@@ -267,8 +267,11 @@ a { color: inherit; text-decoration: none; }
 
 .card-body { padding: 12px 13px 13px; flex: 1; display: flex; flex-direction: column; }
 .card-name { font-size: 13px; font-weight: 600; line-height: 1.35; margin-bottom: 5px; }
-.card-price { font-size: 13px; font-weight: 700; margin-bottom: 9px; }
-.card-price .note { font-size: 10px; font-weight: 400; color: var(--ink-2); margin-left: 5px; }
+.card-price { margin-bottom: 9px; }
+.card-price-row { display: flex; align-items: baseline; gap: 7px; }
+.card-price-main { font-size: 13px; font-weight: 700; }
+.card-price-min { font-size: 10px; font-weight: 400; color: var(--ink-2); }
+.card-price-note { font-size: 10px; font-weight: 400; color: var(--ink-2); margin-top: 2px; line-height: 1.4; }
 .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
 .mtag {
   font-size: 10px;
@@ -413,8 +416,11 @@ a { color: inherit; text-decoration: none; }
 }
 
 .peek-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-.peek-price { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
-.peek-price .note { font-size: 11px; font-weight: 400; color: var(--ink-2); margin-left: 6px; }
+.peek-price { margin-bottom: 2px; }
+.peek-price-row { display: flex; align-items: baseline; gap: 8px; }
+.peek-price-main { font-size: 15px; font-weight: 700; }
+.peek-price-min { font-size: 11px; font-weight: 400; color: var(--ink-2); }
+.peek-price-note { font-size: 11px; font-weight: 400; color: var(--ink-2); margin-top: 3px; line-height: 1.5; }
 
 .dl { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 14px; }
 .dl-title {
@@ -911,7 +917,13 @@ function render() {
       <div class="card-img">${imgHtml}</div>
       <div class="card-body">
         <p class="card-name">${p.name}</p>
-        <div class="card-price">NT$${p.price}${p.priceNote ? `<span class="note">${p.priceNote}</span>` : ''}</div>
+        <div class="card-price">
+          <div class="card-price-row">
+            <span class="card-price-min">${p.price_min < p.price_max ? `NT$${p.price_min}起` : ''}</span>
+            <span class="card-price-main">NT$${p.price_max}</span>
+          </div>
+          ${p.priceNote ? `<div class="card-price-note">${p.priceNote}</div>` : ''}
+        </div>
         <div class="card-tags">${tagsHtml}</div>
         <div class="card-meta">
           <span>MOQ ${p.moq.toLocaleString()}</span>
@@ -966,7 +978,13 @@ function openPeek(p) {
   document.getElementById('peekBody').innerHTML = `
     <div class="peek-img">${imgHtml}</div>
     <div class="peek-name">${p.name}</div>
-    <div class="peek-price">NT$${p.price}${p.priceNote ? `<span class="note">${p.priceNote}</span>` : ''}</div>
+    <div class="peek-price">
+      <div class="peek-price-row">
+        <span class="peek-price-min">${p.price_min < p.price_max ? `NT$${p.price_min}起` : ''}</span>
+        <span class="peek-price-main">NT$${p.price_max}</span>
+      </div>
+      ${p.priceNote ? `<div class="peek-price-note">${p.priceNote}</div>` : ''}
+    </div>
 
     <div class="dl">
       <div class="dl-title">規格</div>
