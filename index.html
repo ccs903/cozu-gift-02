@@ -1035,8 +1035,8 @@ function openPeek(p) {
     ? proposals.map(d => `
         <div class="deal-row${d.selected ? ' selected' : ''}">
           <span class="deal-co">${d.company}</span>
-          ${d.selected ? `<span class="deal-selected-badge">✓ 客戶選中</span>` : ''}
           <span class="deal-occ">· ${d.occasion}</span>
+          ${d.selected ? `<span class="deal-selected-badge">✓ 客戶選中</span>` : ''}
           <span class="deal-yr">${d.year}</span>
           ${d.slide_url
             ? `<a class="slide-link" href="${d.slide_url}" target="_blank" rel="noopener noreferrer" style="margin-top:0;padding:3px 8px;font-size:11px;">
