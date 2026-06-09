@@ -603,11 +603,10 @@ a { color: inherit; text-decoration: none; }
     <div class="fgroup">
       <div class="fgroup-title">單品預算</div>
       <div class="chips" id="budgetChips">
-        <button class="chip on" data-budget="all" onclick="pickBudget('all')">不限</button>
-        <button class="chip" data-budget="u150" onclick="pickBudget('u150')">NT$150 以下</button>
-        <button class="chip" data-budget="150-300" onclick="pickBudget('150-300')">NT$150–300</button>
-        <button class="chip" data-budget="300-500" onclick="pickBudget('300-500')">NT$300–500</button>
-        <button class="chip" data-budget="o500" onclick="pickBudget('o500')">NT$500 以上</button>
+        <button class="chip" data-budget="u150"    onclick="toggleBudget('u150')">NT$150 以下</button>
+        <button class="chip" data-budget="150-300" onclick="toggleBudget('150-300')">NT$150–300</button>
+        <button class="chip" data-budget="300-500" onclick="toggleBudget('300-500')">NT$300–500</button>
+        <button class="chip" data-budget="o500"    onclick="toggleBudget('o500')">NT$500 以上</button>
       </div>
     </div>
 
@@ -717,12 +716,12 @@ const MOQ_OPTS = [
 // 狀態
 // ════════════════════════════════════
 let products = [];
-let selMats   = new Set();
-let selThemes = new Set();
-let selInds   = new Set();
-let selTags   = new Set();
-let selBudget = 'all';
-let selMoq    = 'all';
+let selMats    = new Set();
+let selThemes  = new Set();
+let selInds    = new Set();
+let selTags    = new Set();
+let selBudgets = new Set(); // 多選
+let selMoq     = 'all';
 
 // ════════════════════════════════════
 // 載入資料
@@ -821,10 +820,13 @@ function parseGvizDate(val) {
 // price_min ≤ 上限：大量時有機會壓到預算 → 偏寬鬆，業務靠 priceNote 自判
 // NT$500以上：price_max ≥ 500，確保高單價商品能被找到
 function matchBudget(p) {
-  const opt = BUDGET_OPTS.find(b => b.id === selBudget);
-  if (opt.id === 'all')  return true;
-  if (opt.id === 'o500') return p.price_max >= 500;
-  return p.price_min <= opt.maxPrice;
+  if (selBudgets.size === 0) return true;
+  return [...selBudgets].some(id => {
+    const opt = BUDGET_OPTS.find(b => b.id === id);
+    if (!opt) return false;
+    if (opt.id === 'o500') return p.price_max >= 500;
+    return p.price_min <= opt.maxPrice;
+  });
 }
 function matchMoq(moq) {
   return moq <= MOQ_OPTS.find(m => m.id === selMoq).max;
@@ -905,12 +907,19 @@ function toggle(set, val, cb) {
 // ════════════════════════════════════
 // Chip filters
 // ════════════════════════════════════
-function pickBudget(id) {
-  selBudget = id;
-  document.querySelectorAll('#budgetChips .chip').forEach(b => {
-    b.classList.toggle('on', b.dataset.budget === id);
-  });
+function toggleBudget(id) {
+  if (selBudgets.has(id)) {
+    selBudgets.delete(id);
+  } else {
+    selBudgets.add(id);
+  }
+  updateBudgetChips();
   render();
+}
+function updateBudgetChips() {
+  document.querySelectorAll('#budgetChips .chip').forEach(b => {
+    b.classList.toggle('on', selBudgets.has(b.dataset.budget));
+  });
 }
 function pickMoq(id) {
   selMoq = id;
@@ -926,7 +935,7 @@ function pickMoq(id) {
 function render() {
   buildRail();
   const filtered = getFiltered();
-  const hasFilter = selMats.size || selThemes.size || selInds.size || selTags.size || selBudget !== 'all' || selMoq !== 'all';
+  const hasFilter = selMats.size || selThemes.size || selInds.size || selTags.size || selBudgets.size || selMoq !== 'all';
 
   document.getElementById('clearBtn').disabled = !hasFilter;
   document.getElementById('resCount').innerHTML = `找到 <b>${filtered.length}</b> 項商品`;
@@ -945,7 +954,10 @@ function render() {
   selThemes.forEach(t => addChip('場合：' + t, () => toggle(selThemes, t, render)));
   selInds.forEach(i  => addChip('產業：' + i,  () => toggle(selInds,   i, render)));
   selTags.forEach(t  => addChip('風格：' + t,  () => toggle(selTags,   t, render)));
-  if (selBudget !== 'all') addChip(BUDGET_OPTS.find(b => b.id === selBudget).label, () => pickBudget('all'));
+  selBudgets.forEach(id => {
+    const opt = BUDGET_OPTS.find(b => b.id === id);
+    if (opt) addChip('預算：' + opt.label, () => { selBudgets.delete(id); updateBudgetChips(); render(); });
+  });
   if (selMoq    !== 'all') addChip('MOQ ' + MOQ_OPTS.find(m => m.id === selMoq).label, () => pickMoq('all'));
 
   // cards
@@ -1013,8 +1025,8 @@ function render() {
 // ════════════════════════════════════
 function clearAll() {
   selMats.clear(); selThemes.clear(); selInds.clear(); selTags.clear();
-  selBudget = 'all'; selMoq = 'all';
-  document.querySelectorAll('#budgetChips .chip').forEach(b => b.classList.toggle('on', b.dataset.budget === 'all'));
+  selBudgets.clear(); selMoq = 'all';
+  updateBudgetChips();
   document.querySelectorAll('#moqChips .chip').forEach(b => b.classList.toggle('on', b.dataset.moq === 'all'));
   render();
 }
@@ -1065,10 +1077,6 @@ function openPeek(p) {
       <div class="dl-row"><span class="dl-key">材質</span><span class="dl-val">${p.material}</span></div>
       <div class="dl-row"><span class="dl-key">最低訂購量</span><span class="dl-val">${p.moq.toLocaleString()} 件</span></div>
       <div class="dl-row"><span class="dl-key">風格</span><span class="dl-val">${p.tag}</span></div>
-      <div class="dl-row">
-        <span class="dl-key">材質分類</span>
-        <span class="dl-val"><div class="pills">${(mats.length ? mats : ['—']).map(m => `<span class="pill">${m}</span>`).join('')}</div></span>
-      </div>
       ${p.last_updated_time ? `<div class="dl-row"><span class="dl-key">最後更新時間</span><span class="dl-val">${p.last_updated_time}</span></div>` : ''}
     </div>
 
