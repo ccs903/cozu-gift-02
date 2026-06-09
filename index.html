@@ -460,15 +460,10 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  padding: 7px 0;
+  padding: 8px;
   border-bottom: 1px dashed var(--line);
 }
 .deal-row:last-child { border-bottom: none; }
-.deal-row.selected {
-  background: #f7f7f7;
-  border-radius: 4px;
-  padding: 7px 8px;
-}
 .deal-co { font-weight: 500; color: var(--ink); }
 .deal-occ { color: var(--ink-2); }
 .deal-yr { margin-left: auto; font-size: 10px; color: var(--ink-2); white-space: nowrap; }
@@ -478,7 +473,7 @@ a { color: inherit; text-decoration: none; }
   gap: 3px;
   font-size: 10px;
   font-weight: 600;
-  color: var(--ink);
+  color: #2d7a3a;
   white-space: nowrap;
 }
 .deal-empty { font-size: 12px; color: #bbb; padding: 6px 0; }
@@ -774,6 +769,10 @@ function parseGviz(json) {
           const slide_url  = isSelected ? col4 : col3;
           return { company, occasion, year, selected, slide_url };
         }).filter(d => d.company)
+        .sort((a, b) => {
+          if (a.selected !== b.selected) return a.selected ? -1 : 1;
+          return parseInt(b.year) - parseInt(a.year);
+        })
       : [];
 
     const priceMax = parseFloat(get('price_max')) || parseFloat(get('price')) || 0;
@@ -1035,8 +1034,8 @@ function openPeek(p) {
   const proposalsHtml = proposals.length > 0
     ? proposals.map(d => `
         <div class="deal-row${d.selected ? ' selected' : ''}">
-          ${d.selected ? `<span class="deal-selected-badge">✓ 選中</span>` : ''}
           <span class="deal-co">${d.company}</span>
+          ${d.selected ? `<span class="deal-selected-badge">✓ 客戶選中</span>` : ''}
           <span class="deal-occ">· ${d.occasion}</span>
           <span class="deal-yr">${d.year}</span>
           ${d.slide_url
@@ -1070,7 +1069,7 @@ function openPeek(p) {
         <span class="dl-key">材質分類</span>
         <span class="dl-val"><div class="pills">${(mats.length ? mats : ['—']).map(m => `<span class="pill">${m}</span>`).join('')}</div></span>
       </div>
-      ${p.last_updated_time ? `<div class="dl-row"><span class="dl-key">價格更新</span><span class="dl-val">${p.last_updated_time}</span></div>` : ''}
+      ${p.last_updated_time ? `<div class="dl-row"><span class="dl-key">最後更新時間</span><span class="dl-val">${p.last_updated_time}</span></div>` : ''}
     </div>
 
     <div class="dl">
