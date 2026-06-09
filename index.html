@@ -460,14 +460,39 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  padding: 7px 0;
+  padding: 7px 0 7px 8px;
   border-bottom: 1px dashed var(--line);
+  border-left: 2px solid transparent;
 }
 .deal-row:last-child { border-bottom: none; }
+.deal-row.selected {
+  border-left-color: #1a1a1a;
+  background: #f7f7f7;
+  border-radius: 0 4px 4px 0;
+}
 .deal-co { font-weight: 500; color: var(--ink); }
 .deal-occ { color: var(--ink-2); }
 .deal-yr { margin-left: auto; font-size: 10px; color: var(--ink-2); white-space: nowrap; }
+.deal-selected-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
 .deal-empty { font-size: 12px; color: #bbb; padding: 6px 0; }
+
+/* card proposal meta */
+.meta-selected {
+  color: var(--ink);
+  font-weight: 600;
+}
+.meta-selected-check {
+  font-size: 11px;
+}
 
 /* NAS */
 .nas-box {
@@ -735,12 +760,18 @@ function parseGviz(json) {
       const i = cols.indexOf(k);
       return (i >= 0 && row.c[i]) ? String(row.c[i].v).trim() : '';
     };
-    // proposals: 每行格式「公司名稱|場合|年份|簡報URL（可空）」
+    // proposals: 格式「公司名稱|場合|年份|selected（可空）|簡報URL（可空）」
     const proposalsRaw = get('proposals');
     const proposals = proposalsRaw
       ? proposalsRaw.trim().split('\n').map(l => {
-          const [company='', occasion='', year='', slide_url=''] = l.trim().split('|');
-          return { company, occasion, year, slide_url: slide_url.trim() };
+          const [company='', occasion='', year='', selected='', slide_url=''] = l.trim().split('|');
+          return {
+            company,
+            occasion,
+            year,
+            selected: selected.trim().toLowerCase() === 'selected',
+            slide_url: slide_url.trim()
+          };
         }).filter(d => d.company)
       : [];
 
@@ -748,9 +779,9 @@ function parseGviz(json) {
     const priceMin = parseFloat(get('price_min')) || priceMax;
     return {
       name      : get('name'),
-      price     : priceMax,       // 顯示用（報價表最低MOQ對應單價）
-      price_max : priceMax,       // 顯示用，同上
-      price_min : priceMin,       // 篩選用（大量時的最低單價）
+      price     : priceMax,
+      price_max : priceMax,
+      price_min : priceMin,
       priceNote : get('priceNote'),
       moq       : parseInt(get('moq')) || 0,
       material  : get('material'),
@@ -759,6 +790,7 @@ function parseGviz(json) {
       themes    : get('themes').split(',').map(s => s.trim()).filter(Boolean),
       nas_path  : get('nas_path'),
       image_url : get('image_url'),
+      last_updated_time: get('last_updated_time'),
       proposals,
     };
   }).filter(p => p.name);
@@ -926,14 +958,13 @@ function render() {
 
 
 
-    const propCount = p.proposals.length;
-    const dealBadge = propCount > 0
-      ? `<span class="deal-badge">
-           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-             <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-           </svg>
-           ${propCount} 筆提案紀錄
-         </span>`
+    const propCount    = p.proposals.length;
+    const selectedCount = p.proposals.filter(d => d.selected).length;
+
+    const proposalMeta = propCount > 0
+      ? selectedCount > 0
+        ? `<span class="meta-sep">•</span><span class="meta-selected"><span class="meta-selected-check">✓</span> 選中 ${selectedCount} 次</span><span class="meta-sep">·</span><span>${propCount} 筆提案</span>`
+        : `<span class="meta-sep">•</span><span>${propCount} 筆提案</span>`
       : '';
 
     card.innerHTML = `
@@ -951,7 +982,7 @@ function render() {
         </div>
         <div class="card-meta">
           <span>MOQ ${p.moq.toLocaleString()}</span>
-          ${propCount > 0 ? `<span class="meta-sep">•</span><span>${propCount} 筆提案</span>` : ''}
+          ${proposalMeta}
         </div>
         <div class="card-tag-row">
           ${p.themes.slice(0,2).map(t => `<span class="mtag">${t}</span>`).join('')}
@@ -987,7 +1018,8 @@ function openPeek(p) {
 
   const proposalsHtml = proposals.length > 0
     ? proposals.map(d => `
-        <div class="deal-row">
+        <div class="deal-row${d.selected ? ' selected' : ''}">
+          ${d.selected ? `<span class="deal-selected-badge">選中</span>` : ''}
           <span class="deal-co">${d.company}</span>
           <span class="deal-occ">· ${d.occasion}</span>
           <span class="deal-yr">${d.year}</span>
@@ -1022,6 +1054,7 @@ function openPeek(p) {
         <span class="dl-key">材質分類</span>
         <span class="dl-val"><div class="pills">${(mats.length ? mats : ['—']).map(m => `<span class="pill">${m}</span>`).join('')}</div></span>
       </div>
+      ${p.last_updated_time ? `<div class="dl-row"><span class="dl-key">價格更新</span><span class="dl-val">${p.last_updated_time}</span></div>` : ''}
     </div>
 
     <div class="dl">
@@ -1045,7 +1078,6 @@ function openPeek(p) {
         <span class="nas-path" id="nasPath">${nas}</span>
         <button class="copy-btn" id="copyBtn" onclick="copyNas('${nas.replace(/'/g,"\\'")}')">複製</button>
       </div>
-      <p class="peek-note">提案紀錄、NAS 路徑與簡報連結為 lo-fi 示意資料，正式版將連動 Google Sheet 對應欄位。</p>
     </div>`;
 
   document.getElementById('scrim').style.display = 'block';
@@ -1082,9 +1114,17 @@ function switchTab(tab) {
 (async () => {
   try {
     products = await loadData();
-    const now = new Date();
+    // 右上角：取所有商品中最新的 last_updated_time，若無則顯示載入時間
+    const latestUpdate = products
+      .map(p => p.last_updated_time)
+      .filter(Boolean)
+      .sort()
+      .pop();
     document.getElementById('lastUpdated').textContent =
-      `更新於 ${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      latestUpdate ? `價格更新於 ${latestUpdate}` : (() => {
+        const now = new Date();
+        return `載入於 ${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      })();
     document.getElementById('stateLoading').style.display = 'none';
     document.getElementById('cardGrid').style.display     = 'grid';
     buildRail();
