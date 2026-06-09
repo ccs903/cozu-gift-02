@@ -460,27 +460,25 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  padding: 7px 0 7px 8px;
+  padding: 7px 0;
   border-bottom: 1px dashed var(--line);
-  border-left: 2px solid transparent;
 }
 .deal-row:last-child { border-bottom: none; }
 .deal-row.selected {
-  border-left-color: #1a1a1a;
   background: #f7f7f7;
-  border-radius: 0 4px 4px 0;
+  border-radius: 4px;
+  padding: 7px 8px;
 }
 .deal-co { font-weight: 500; color: var(--ink); }
 .deal-occ { color: var(--ink-2); }
 .deal-yr { margin-left: auto; font-size: 10px; color: var(--ink-2); white-space: nowrap; }
 .deal-selected-badge {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: .04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
   color: var(--ink);
-  border: 1px solid var(--ink);
-  border-radius: 3px;
-  padding: 1px 5px;
   white-space: nowrap;
 }
 .deal-empty { font-size: 12px; color: #bbb; padding: 6px 0; }
@@ -761,17 +759,20 @@ function parseGviz(json) {
       return (i >= 0 && row.c[i]) ? String(row.c[i].v).trim() : '';
     };
     // proposals: 格式「公司名稱|場合|年份|selected（可空）|簡報URL（可空）」
+    // 第四欄若不是 'selected' 則視為 URL（兼容沒有補空欄的資料）
     const proposalsRaw = get('proposals');
     const proposals = proposalsRaw
       ? proposalsRaw.trim().split('\n').map(l => {
-          const [company='', occasion='', year='', selected='', slide_url=''] = l.trim().split('|');
-          return {
-            company,
-            occasion,
-            year,
-            selected: selected.trim().toLowerCase() === 'selected',
-            slide_url: slide_url.trim()
-          };
+          const parts    = l.trim().split('|');
+          const company  = (parts[0] || '').trim();
+          const occasion = (parts[1] || '').trim();
+          const year     = (parts[2] || '').trim();
+          const col3     = (parts[3] || '').trim();
+          const col4     = (parts[4] || '').trim();
+          const isSelected = col3.toLowerCase() === 'selected';
+          const selected   = isSelected;
+          const slide_url  = isSelected ? col4 : col3;
+          return { company, occasion, year, selected, slide_url };
         }).filter(d => d.company)
       : [];
 
@@ -790,7 +791,7 @@ function parseGviz(json) {
       themes    : get('themes').split(',').map(s => s.trim()).filter(Boolean),
       nas_path  : get('nas_path'),
       image_url : get('image_url'),
-      last_updated_time: get('last_updated_time'),
+      last_updated_time: parseGvizDate(get('last_updated_time')),
       proposals,
     };
   }).filter(p => p.name);
@@ -798,6 +799,21 @@ function parseGviz(json) {
 
 function getMats(material) {
   return MAT_RULES.filter(([, re]) => re.test(material)).map(([k]) => k);
+}
+
+// gviz 日期格式轉換：Date(2026,5,29,14,53,0) → 2026/6/29 14:53
+function parseGvizDate(val) {
+  if (!val) return '';
+  const m = String(val).match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+))?/);
+  if (m) {
+    const year  = m[1];
+    const month = parseInt(m[2]) + 1; // gviz 月份從 0 開始
+    const day   = m[3];
+    const hour  = m[4] != null ? String(m[4]).padStart(2,'0') : null;
+    const min   = m[5] != null ? String(m[5]).padStart(2,'0') : null;
+    return hour ? `${year}/${month}/${day} ${hour}:${min}` : `${year}/${month}/${day}`;
+  }
+  return val; // 如果已經是純文字就直接回傳
 }
 
 // ════════════════════════════════════
@@ -1019,7 +1035,7 @@ function openPeek(p) {
   const proposalsHtml = proposals.length > 0
     ? proposals.map(d => `
         <div class="deal-row${d.selected ? ' selected' : ''}">
-          ${d.selected ? `<span class="deal-selected-badge">選中</span>` : ''}
+          ${d.selected ? `<span class="deal-selected-badge">✓ 選中</span>` : ''}
           <span class="deal-co">${d.company}</span>
           <span class="deal-occ">· ${d.occasion}</span>
           <span class="deal-yr">${d.year}</span>
@@ -1121,7 +1137,7 @@ function switchTab(tab) {
       .sort()
       .pop();
     document.getElementById('lastUpdated').textContent =
-      latestUpdate ? `價格更新於 ${latestUpdate}` : (() => {
+      latestUpdate ? `最後更新 ${latestUpdate}` : (() => {
         const now = new Date();
         return `載入於 ${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
       })();
