@@ -827,9 +827,9 @@ function matchBudget(p) {
   return [...selBudgets].some(id => {
     const opt = BUDGET_OPTS.find(b => b.id === id);
     if (!opt) return false;
-    if (opt.id === 'o500') return p.price_max >= 501;
-    if (opt.min === 0)     return p.price_max <= opt.max;
-    return p.price_max >= opt.min && p.price_max <= opt.max;
+    if (opt.id === 'o500') return p.price_min >= 501;
+    if (opt.min === 0)     return p.price_min <= opt.max;
+    return p.price_min >= opt.min && p.price_min <= opt.max;
   });
 }
 function matchMoq(moq) {
