@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COZU｜新樣品上架 SOP</title>
+<link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #111111;
+    --gray-900: #1a1a1a;
+    --gray-700: #444444;
+    --gray-500: #888888;
+    --gray-300: #cccccc;
+    --gray-100: #f4f4f4;
+    --gray-50: #fafafa;
+    --white: #ffffff;
+    --accent: #111111;
+
+    --role-boss: #111111;
+    --role-design: #555555;
+    --role-sales: #888888;
+
+    --font-en: 'Mulish', sans-serif;
+    --font-zh: 'Noto Sans TC', sans-serif;
+  }
+
+  body {
+    font-family: var(--font-zh);
+    background: var(--white);
+    color: var(--black);
+    line-height: 1.6;
+    padding: 48px 24px 80px;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .header {
+    border-bottom: 1px solid var(--black);
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+  }
+
+  .header-eyebrow {
+    font-family: var(--font-en);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+  }
+
+  .header-title {
+    font-family: var(--font-en);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--black);
+    margin-bottom: 4px;
+  }
+
+  .header-sub {
+    font-size: 13px;
+    color: var(--gray-500);
+    font-weight: 300;
+  }
+
+  /* ── Role Legend ── */
+  .legend {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--gray-700);
+    font-family: var(--font-en);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .dot-boss   { background: var(--role-boss); }
+  .dot-design { background: var(--role-design); }
+  .dot-sales  { background: var(--role-sales); }
+
+  /* ── Section Title ── */
+  .section-title {
+    font-family: var(--font-en);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 16px;
+  }
+
+  /* ── Flow ── */
+  .flow {
+    margin-bottom: 56px;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 0 16px;
+    position: relative;
+  }
+
+  /* connector line */
+  .step:not(:last-child) .step-line::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 36px;
+    bottom: 0;
+    width: 1px;
+    background: var(--gray-300);
+  }
+
+  .step-line {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-en);
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--white);
+    flex-shrink: 0;
+    z-index: 1;
+  }
+
+  .step-num.boss   { background: var(--black); color: var(--white); border-color: var(--black); }
+  .step-num.design { background: var(--white); color: var(--gray-700); border-color: var(--gray-500); }
+  .step-num.sales  { background: var(--white); color: var(--gray-500); border-color: var(--gray-300); }
+
+  .step-body {
+    padding: 4px 0 32px;
+  }
+
+  .step-role {
+    font-family: var(--font-en);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .step-role.boss   { color: var(--role-boss); }
+  .step-role.design { color: var(--role-design); }
+  .step-role.sales  { color: var(--role-sales); }
+
+  .step-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--black);
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .step-sub {
+    font-size: 13px;
+    color: var(--gray-500);
+    font-weight: 300;
+    line-height: 1.6;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .step-sub::before {
+    content: '→';
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--gray-400);
+  }
+
+  .step-tag {
+    display: inline-block;
+    font-family: var(--font-en);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border: 1px solid var(--gray-300);
+    border-radius: 2px;
+    color: var(--gray-500);
+    margin-top: 8px;
+  }
+
+  .step-tag.verify {
+    border-color: var(--black);
+    color: var(--black);
+  }
+
+  /* ── Divider ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--gray-100);
+    margin: 0 0 40px;
+  }
+
+  /* ── Field Table ── */
+  .table-wrap {
+    margin-bottom: 56px;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead tr {
+    border-bottom: 1px solid var(--black);
+  }
+
+  th {
+    font-family: var(--font-en);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    padding: 8px 12px 8px 0;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 12px 10px 0;
+    vertical-align: top;
+    border-bottom: 1px solid var(--gray-100);
+    color: var(--gray-700);
+    line-height: 1.5;
+  }
+
+  td:first-child {
+    font-family: var(--font-en);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--black);
+    white-space: nowrap;
+  }
+
+  .td-source {
+    font-size: 12px;
+    color: var(--gray-500);
+  }
+
+  .td-note {
+    font-size: 12px;
+    color: var(--gray-500);
+    font-style: italic;
+  }
+
+  .required-dot {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--black);
+    margin-right: 6px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+  }
+
+  /* ── Note Block ── */
+  .note-block {
+    background: var(--gray-50);
+    border-left: 2px solid var(--black);
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--gray-700);
+    line-height: 1.7;
+  }
+
+  .note-block strong {
+    font-weight: 600;
+    color: var(--black);
+    display: block;
+    margin-bottom: 4px;
+    font-family: var(--font-en);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  code {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    background: var(--gray-100);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--black);
+  }
+
+  /* ── Footer ── */
+  .footer {
+    border-top: 1px solid var(--gray-100);
+    padding-top: 16px;
+    font-size: 11px;
+    color: var(--gray-500);
+    font-family: var(--font-en);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-eyebrow">COZU Internal SOP</div>
+  <div class="header-title">新樣品上架流程</div>
+  <div class="header-sub">適用對象：老闆、設計、業務助理</div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot dot-boss"></div>老闆</div>
+  <div class="legend-item"><div class="legend-dot dot-design"></div>設計</div>
+  <div class="legend-item"><div class="legend-dot dot-sales"></div>業務助理</div>
+</div>
+
+<!-- Flow -->
+<div class="section-title">上架流程</div>
+<div class="flow">
+
+  <div class="step">
+    <div class="step-line">
+      <div class="step-num boss">1</div>
+    </div>
+    <div class="step-body">
+      <div class="step-role boss">老闆</div>
+      <div class="step-title">決定該樣品是否上架</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-line">
+      <div class="step-num boss">2</div>
+    </div>
+    <div class="step-body">
+      <div class="step-role boss">老闆</div>
+      <div class="step-title">填入 Raw Sheet 並上傳樣品照至 NAS</div>
+      <div class="step-sub">將樣品基本資訊（含初步命名）填入 Raw Sheet，同步將廠商提供的樣品照上傳至指定 NAS 資料夾</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-line">
+      <div class="step-num design">3</div>
+    </div>
+    <div class="step-body">
+      <div class="step-role design">設計</div>
+      <div class="step-title">AI 輔助命名，口頭與老闆確認</div>
+      <div class="step-sub">將 NAS 樣品照傳入 AI 工具取得命名建議，口頭向老闆快速確認正式商品名稱</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-line">
+      <div class="step-num design">4</div>
+    </div>
+    <div class="step-body">
+      <div class="step-role design">設計</div>
+      <div class="step-title">去背處理、上傳 Shopline、填回圖片 URL</div>
+      <div class="step-sub">完成去背後上傳至 Shopline 圖片庫，將圖片公開 URL 填回 Raw Sheet 的對應欄位</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-line">
+      <div class="step-num design">5</div>
+    </div>
+    <div class="step-body">
+      <div class="step-role design">設計</div>
+      <div class="step-title">官網上架，並驗收內容正確性</div>
+      <div class="step-sub">將商品上架至 COZU 官網，確認官網顯示內容與 Raw Sheet 資訊一致</div>
+      <div class="step-tag verify">驗收點</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-line">
+      <div class="step-num sales">6</div>
+    </div>
+    <div class="step-body">
+      <div class="step-role sales">業務助理</div>
+      <div class="step-title">依 Raw Sheet 新增條目至查詢系統資料庫</div>
+      <div class="step-sub">對照下方欄位對照表，將資訊逐欄填入查詢系統的 Google Sheet</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-line">
+      <div class="step-num sales">7</div>
+    </div>
+    <div class="step-body">
+      <div class="step-role sales">業務助理</div>
+      <div class="step-title">在查詢系統驗收資料顯示正確</div>
+      <div class="step-sub">開啟查詢系統，確認商品卡片、Panel 內容、圖片、價格等顯示無誤</div>
+      <div class="step-tag verify">驗收點</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-line">
+      <div class="step-num sales">8</div>
+    </div>
+    <div class="step-body">
+      <div class="step-role sales">業務助理</div>
+      <div class="step-title">在公司 LINE 群組發通知，附查詢系統截圖</div>
+      <div class="step-sub">驗收完成後，於公司 LINE 群組通知所有人，並附上查詢系統截圖供大家確認</div>
+    </div>
+  </div>
+
+</div>
+
+<hr class="divider">
+
+<!-- Field Table -->
+<div class="section-title">欄位對照表｜Raw Sheet → 查詢系統資料庫</div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>資料庫欄位</th>
+        <th>說明</th>
+        <th>Raw Sheet 來源</th>
+        <th>填寫注意事項</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="required-dot"></span>name</td>
+        <td>商品名稱</td>
+        <td class="td-source">步驟 3 確認的正式名稱</td>
+        <td class="td-note">中文為主，可含英文副標</td>
+      </tr>
+      <tr>
+        <td><span class="required-dot"></span>price</td>
+        <td>顯示價格（單一標價）</td>
+        <td class="td-source">Raw Sheet 報價欄</td>
+        <td class="td-note">純數字，不含符號</td>
+      </tr>
+      <tr>
+        <td><span class="required-dot"></span>price_min</td>
+        <td>預算篩選下限</td>
+        <td class="td-source">Raw Sheet 報價欄</td>
+        <td class="td-note">純數字；無區間則與 price 同值</td>
+      </tr>
+      <tr>
+        <td>price_max</td>
+        <td>預算篩選上限</td>
+        <td class="td-source">Raw Sheet 報價欄</td>
+        <td class="td-note">純數字；無上限可留空</td>
+      </tr>
+      <tr>
+        <td>priceNote</td>
+        <td>價格備註</td>
+        <td class="td-source">Raw Sheet 備註欄</td>
+        <td class="td-note">例：含印刷費、MOQ 100 起</td>
+      </tr>
+      <tr>
+        <td><span class="required-dot"></span>moq</td>
+        <td>最低訂購量</td>
+        <td class="td-source">Raw Sheet MOQ 欄</td>
+        <td class="td-note">純數字</td>
+      </tr>
+      <tr>
+        <td>material</td>
+        <td>材質</td>
+        <td class="td-source">Raw Sheet 材質欄</td>
+        <td class="td-note">例：金屬、玻璃、皮革</td>
+      </tr>
+      <tr>
+        <td>tag</td>
+        <td>標籤</td>
+        <td class="td-source">Raw Sheet 標籤欄</td>
+        <td class="td-note">多個標籤以逗號分隔</td>
+      </tr>
+      <tr>
+        <td>industries</td>
+        <td>適合產業</td>
+        <td class="td-source">Raw Sheet 產業欄</td>
+        <td class="td-note">多個以逗號分隔</td>
+      </tr>
+      <tr>
+        <td>themes</td>
+        <td>適合場合</td>
+        <td class="td-source">Raw Sheet 場合欄</td>
+        <td class="td-note">多個以逗號分隔</td>
+      </tr>
+      <tr>
+        <td>nas_path</td>
+        <td>NAS 原圖路徑</td>
+        <td class="td-source">步驟 2 上傳後的路徑</td>
+        <td class="td-note">例：/樣品照/金屬夾/</td>
+      </tr>
+      <tr>
+        <td><span class="required-dot"></span>image_url</td>
+        <td>去背圖公開 URL</td>
+        <td class="td-source">步驟 4 設計填回的 Shopline URL</td>
+        <td class="td-note">必須是可公開存取的完整網址</td>
+      </tr>
+      <tr>
+        <td>proposals</td>
+        <td>提案紀錄</td>
+        <td class="td-source">新品上架時留空即可</td>
+        <td class="td-note">格式：<code>公司|場合|年份|selected|URL</code><br>多筆以換行分隔</td>
+      </tr>
+      <tr>
+        <td>last_updated_time</td>
+        <td>最後更新時間</td>
+        <td class="td-source">—</td>
+        <td class="td-note">填入上架當天日期，格式：<code>YYYY-MM-DD</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="note-block">
+  <strong>必填欄位說明</strong>
+  標有 ● 的欄位為必填。name、price、price_min、moq、image_url 缺少任一項，商品卡片將無法正常顯示。其餘欄位建議盡量填寫，有助於業務篩選。
+</div>
+
+<!-- Footer -->
+<div class="footer" style="margin-top: 48px;">
+  <span>COZU 內部文件｜禮品查詢系統 SOP</span>
+  <span>最後更新：2025</span>
+</div>
+
+</body>
+</html>
