@@ -200,7 +200,7 @@ body {
 }
 
 .step-role {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: .1em;
   text-transform: uppercase;
@@ -221,10 +221,16 @@ body {
   color: var(--color-text-tertiary);
   line-height: 1.6;
   margin-top: 4px;
-  padding-left: 26px;
+}
+.step-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 .step-verify {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: .06em;
@@ -232,8 +238,7 @@ body {
   border: 1px solid var(--color-text-primary);
   border-radius: 4px;
   color: var(--color-text-primary);
-  margin-top: 8px;
-  margin-left: 26px;
+  white-space: nowrap;
 }
 
 /* ── Right panel: Field table ── */
@@ -250,7 +255,7 @@ body {
   background: var(--color-bg-subtle);
 }
 .field-panel-title {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -269,7 +274,7 @@ body {
 .field-row:last-child { border-bottom: none; }
 .field-name-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
 .field-name {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   font-family: "Mulish", monospace;
   color: var(--color-text-primary);
@@ -280,8 +285,8 @@ body {
   background: var(--color-text-primary);
   flex-shrink: 0;
 }
-.field-desc { font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 4px; }
-.field-note { font-size: 11px; color: var(--color-text-secondary); line-height: 1.5; }
+.field-desc { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: 4px; }
+.field-note { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
 .field-values {
   display: flex;
   flex-wrap: wrap;
@@ -289,7 +294,7 @@ body {
   margin-top: 6px;
 }
 .field-val {
-  font-size: 10px;
+  font-size: 12px;
   padding: 1px 7px;
   border: 1px solid var(--color-border);
   border-radius: 20px;
@@ -439,11 +444,10 @@ code {
             <div class="step-header">
               <div>
                 <div class="step-role design">設計</div>
-                <div class="step-title">官網上架，並驗收內容正確性</div>
+                <div class="step-title-row"><div class="step-title">官網上架，並驗收內容正確性</div><span class="step-verify">第一次驗收</span></div>
               </div>
             </div>
             <div class="step-sub">將商品上架至 COZU 官網，確認官網顯示內容與 Raw Sheet 資訊一致</div>
-            <div class="step-verify">驗收點</div>
           </div>
         </div>
 
@@ -466,11 +470,10 @@ code {
             <div class="step-header">
               <div>
                 <div class="step-role sales">業務助理</div>
-                <div class="step-title">在查詢系統驗收資料顯示正確</div>
+                <div class="step-title-row"><div class="step-title">在查詢系統驗收資料顯示正確</div><span class="step-verify">第二次驗收</span></div>
               </div>
             </div>
             <div class="step-sub">開啟查詢系統，確認商品卡片、Panel 內容、圖片、價格等顯示無誤</div>
-            <div class="step-verify">驗收點</div>
           </div>
         </div>
 
