@@ -36,7 +36,7 @@
   --hover:   var(--color-bg-hover);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; }
+html, body { min-height: 100%; }
 body {
   font-family: var(--font);
   font-size: 13px;
@@ -50,15 +50,12 @@ a { color: inherit; text-decoration: none; }
 
 /* ── Topbar ── */
 .topbar {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 10;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
-body { padding-top: 100px; }
 .topbar-inner {
   max-width: 1280px;
   margin: 0 auto;
@@ -141,7 +138,7 @@ body { padding-top: 100px; }
 /* ── Rail ── */
 .rail {
   position: sticky;
-  top: 116px;
+  top: 106px;
   padding: 24px 0;
 }
 .rail-head {
