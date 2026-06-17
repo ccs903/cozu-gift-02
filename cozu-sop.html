@@ -178,7 +178,11 @@ body {
   flex-shrink: 0;
   z-index: 1;
 }
-.step-num.boss, .step-num.design, .step-num.sales { background: var(--color-text-primary); color: #fff; border-color: var(--color-text-primary); }
+.step-num.boss, .step-num.design, .step-num.sales {
+  background: var(--color-text-primary);
+  color: #fff;
+  border-color: var(--color-text-primary);
+}
 
 .step-body { padding: 4px 0 28px; }
 
@@ -187,16 +191,6 @@ body {
   align-items: flex-start;
   gap: 10px;
   margin-bottom: 6px;
-}
-
-/* checkbox */
-.step-check {
-  width: 16px;
-  height: 16px;
-  border: 1.5px solid var(--color-border);
-  border-radius: 3px;
-  flex-shrink: 0;
-  margin-top: 2px;
 }
 
 .step-role {
@@ -221,6 +215,36 @@ body {
   color: var(--color-text-tertiary);
   line-height: 1.6;
   margin-top: 4px;
+}
+.step-sub-list {
+  margin-top: 6px;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.step-sub-list li {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  line-height: 1.6;
+  padding-left: 12px;
+  position: relative;
+}
+.step-sub-list li::before {
+  content: '–';
+  position: absolute;
+  left: 0;
+  color: var(--color-text-tertiary);
+}
+.step-parallel-note {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-subtle);
+  border-radius: 4px;
+  padding: 8px 12px;
+  line-height: 1.6;
 }
 .step-title-row {
   display: flex;
@@ -285,7 +309,12 @@ body {
   background: var(--color-text-primary);
   flex-shrink: 0;
 }
-.field-desc { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: 4px; }
+.field-desc {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  margin-bottom: 3px;
+}
 .field-note { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
 .field-values {
   display: flex;
@@ -300,6 +329,24 @@ body {
   border-radius: 20px;
   color: var(--color-text-tertiary);
 }
+
+/* 欄位負責人標籤 */
+.field-owner {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-left: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.field-owner.boss   { color: var(--role-boss);   background: #f0f0f0; }
+.field-owner.design { color: var(--role-design);  background: #edf7ef; }
+.field-owner.sales  { color: var(--role-sales);   background: #fef3e2; }
+
 code {
   font-family: "Mulish", monospace;
   font-size: 11px;
@@ -313,7 +360,7 @@ code {
 .note-block {
   background: var(--color-bg-subtle);
   border-radius: 4px;
-  padding: 10px 14px;
+  padding: 12px 16px;
   margin-top: 20px;
   font-size: 12px;
   color: var(--color-text-secondary);
@@ -369,7 +416,6 @@ code {
   <div class="page-header">
     <div class="page-eyebrow">COZU Internal · Sample Onboarding</div>
     <div class="page-title">樣品上架步驟</div>
-
   </div>
 
   <!-- Legend -->
@@ -387,6 +433,7 @@ code {
       <div class="section-label">上架流程</div>
       <div class="flow">
 
+        <!-- Step 1 -->
         <div class="step">
           <div class="step-line"><div class="step-num boss">1</div></div>
           <div class="step-body">
@@ -399,94 +446,113 @@ code {
           </div>
         </div>
 
+        <!-- Step 2 -->
         <div class="step">
           <div class="step-line"><div class="step-num boss">2</div></div>
           <div class="step-body">
             <div class="step-header">
               <div>
                 <div class="step-role boss">老闆</div>
-                <div class="step-title">填入 Raw Sheet 並上傳樣品照至 NAS</div>
+                <div class="step-title">填報價單，將樣品交給設計</div>
               </div>
             </div>
-            <div class="step-sub">將樣品基本資訊（含初步命名）填入 Raw Sheet，同步將廠商提供的樣品照上傳至指定 NAS 資料夾</div>
+            <div class="step-sub">將樣品基本資訊填入報價單，完成後將實體樣品交給設計處理。</div>
+            <ul class="step-sub-list">
+              <li>命名、編碼</li>
+              <li>MOQ（最低訂購量）</li>
+              <li>價格</li>
+            </ul>
+            <div class="step-parallel-note">步驟 3（設計）與步驟 4（業務助理）可同步進行，步驟 5 須等兩者皆完成後再開始。</div>
           </div>
         </div>
 
+        <!-- Step 3 -->
         <div class="step">
           <div class="step-line"><div class="step-num design">3</div></div>
           <div class="step-body">
             <div class="step-header">
               <div>
                 <div class="step-role design">設計</div>
-                <div class="step-title">AI 輔助命名，口頭與老闆確認</div>
+                <div class="step-title">拍攝、去背、上傳圖片，填回查詢系統</div>
               </div>
             </div>
-            <div class="step-sub">將 NAS 樣品照傳入 AI 工具取得命名建議，口頭向老闆快速確認正式商品名稱</div>
+            <div class="step-sub">拍攝實體樣品後完成去背，依序完成以下動作：</div>
+            <ul class="step-sub-list">
+              <li>將原始圖片存至 NAS 對應資料夾，記下路徑填入 <code>nas_path</code></li>
+              <li>將去背圖上傳至 Shopline 圖片庫，取得公開 URL</li>
+              <li>將 URL 直接填回查詢系統 Google Sheet 的 <code>image_url</code> 欄位</li>
+              <li>通知業務助理圖片已完成，可以開始建入查詢系統</li>
+            </ul>
           </div>
         </div>
 
+        <!-- Step 4 -->
         <div class="step">
-          <div class="step-line"><div class="step-num design">4</div></div>
+          <div class="step-line"><div class="step-num sales">4</div></div>
+          <div class="step-body">
+            <div class="step-header">
+              <div>
+                <div class="step-role sales">業務助理</div>
+                <div class="step-title">填報價單補充資訊，並建入查詢系統</div>
+              </div>
+            </div>
+            <div class="step-sub">兩件事同步處理：</div>
+            <ul class="step-sub-list">
+              <li>在報價單補填規格說明、樣品實體位置（辦公室放置位置）</li>
+              <li>對照右側欄位對照表，將資訊填入查詢系統的 Google Sheet</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="step">
+          <div class="step-line"><div class="step-num sales">5</div></div>
+          <div class="step-body">
+            <div class="step-header">
+              <div>
+                <div class="step-role sales">業務助理</div>
+                <div class="step-title-row">
+                  <div class="step-title">驗收查詢系統資料顯示正確，並通知設計</div>
+                  <span class="step-verify">第一次驗收</span>
+                </div>
+              </div>
+            </div>
+            <div class="step-sub">開啟查詢系統確認資訊無誤後，通知設計可以進行官網上架。</div>
+            <ul class="step-sub-list">
+              <li>確認商品卡片、展開的 Panel 內容、圖片、價格、MOQ 等資訊顯示正確</li>
+              <li>通知設計查詢系統驗收完成，可以上架官網</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="step">
+          <div class="step-line"><div class="step-num design">6</div></div>
           <div class="step-body">
             <div class="step-header">
               <div>
                 <div class="step-role design">設計</div>
-                <div class="step-title">去背處理、上傳 Shopline、填回圖片 URL</div>
+                <div class="step-title-row">
+                  <div class="step-title">官網上架，並驗收查詢系統完整顯示</div>
+                  <span class="step-verify">第二次驗收</span>
+                </div>
               </div>
             </div>
-            <div class="step-sub">完成去背後上傳至 Shopline 圖片庫，將圖片公開 URL 填回 Raw Sheet 的 <code>image_url</code> 欄位</div>
+            <div class="step-sub">將商品上架至 COZU 官網後，確認查詢系統的圖片、內容與官網資訊一致。</div>
           </div>
         </div>
 
+        <!-- Step 7 -->
         <div class="step">
-          <div class="step-line"><div class="step-num design">5</div></div>
+          <div class="step-line"><div class="step-num design">7</div></div>
           <div class="step-body">
             <div class="step-header">
               <div>
                 <div class="step-role design">設計</div>
-                <div class="step-title-row"><div class="step-title">官網上架，並驗收內容正確性</div><span class="step-verify">第一次驗收</span></div>
+                <div class="step-title">在公司 LINE 群組發通知，附官網與查詢系統截圖</div>
               </div>
             </div>
-            <div class="step-sub">將商品上架至 COZU 官網，確認官網顯示內容與 Raw Sheet 資訊一致</div>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-line"><div class="step-num sales">6</div></div>
-          <div class="step-body">
-            <div class="step-header">
-              <div>
-                <div class="step-role sales">業務助理</div>
-                <div class="step-title">依 Raw Sheet 新增條目至查詢系統資料庫</div>
-              </div>
-            </div>
-            <div class="step-sub">對照右側欄位對照表，將資訊逐欄填入查詢系統的 Google Sheet</div>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-line"><div class="step-num sales">7</div></div>
-          <div class="step-body">
-            <div class="step-header">
-              <div>
-                <div class="step-role sales">業務助理</div>
-                <div class="step-title-row"><div class="step-title">在查詢系統驗收資料顯示正確</div><span class="step-verify">第二次驗收</span></div>
-              </div>
-            </div>
-            <div class="step-sub">開啟查詢系統，確認商品卡片、Panel 內容、圖片、價格等顯示無誤</div>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-line"><div class="step-num sales">8</div></div>
-          <div class="step-body">
-            <div class="step-header">
-              <div>
-                <div class="step-role sales">業務助理</div>
-                <div class="step-title">在公司 LINE 群組發通知，附查詢系統截圖</div>
-              </div>
-            </div>
-            <div class="step-sub">驗收完成後，於公司 LINE 群組通知所有人，並附上查詢系統截圖供大家確認</div>
+            <div class="step-sub">驗收完成後，於公司 LINE 群組通知所有人，附上官網與查詢系統截圖供大家確認。</div>
           </div>
         </div>
 
@@ -502,48 +568,73 @@ code {
     <!-- ── Right: Field panel ── -->
     <div class="field-panel">
       <div class="field-panel-head">
-        <div class="field-panel-title">欄位對照表　Raw Sheet → 資料庫</div>
+        <div class="field-panel-title">欄位對照表　報價單 → 查詢系統</div>
       </div>
       <div class="field-panel-body">
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-required"></div><div class="field-name">name</div></div>
+          <div class="field-name-row">
+            <div class="field-required"></div>
+            <div class="field-name">name</div>
+            <span class="field-owner boss">老闆</span>
+          </div>
           <div class="field-desc">商品名稱</div>
-          <div class="field-note">中文為主，可含英文副標。來源：步驟 3 確認的正式名稱</div>
+          <div class="field-note">中文為主，可含英文副標。來源：步驟 2 老闆命名</div>
         </div>
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-required"></div><div class="field-name">price</div></div>
+          <div class="field-name-row">
+            <div class="field-required"></div>
+            <div class="field-name">price</div>
+            <span class="field-owner boss">老闆</span>
+          </div>
           <div class="field-desc">顯示價格（單一標價）</div>
-          <div class="field-note">純數字，不含符號。來源：Raw Sheet 報價欄</div>
+          <div class="field-note">純數字，不含符號。來源：報價單報價欄</div>
         </div>
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-required"></div><div class="field-name">price_min</div></div>
+          <div class="field-name-row">
+            <div class="field-required"></div>
+            <div class="field-name">price_min</div>
+            <span class="field-owner boss">老闆</span>
+          </div>
           <div class="field-desc">預算篩選下限</div>
           <div class="field-note">純數字。無區間則與 price 同值</div>
         </div>
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-name">price_max</div></div>
+          <div class="field-name-row">
+            <div class="field-name">price_max</div>
+            <span class="field-owner boss">老闆</span>
+          </div>
           <div class="field-desc">預算篩選上限</div>
           <div class="field-note">純數字。無上限可留空</div>
         </div>
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-name">priceNote</div></div>
+          <div class="field-name-row">
+            <div class="field-name">priceNote</div>
+            <span class="field-owner boss">老闆</span>
+          </div>
           <div class="field-desc">價格備註</div>
           <div class="field-note">例：含印刷費、MOQ 100 起</div>
         </div>
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-required"></div><div class="field-name">moq</div></div>
+          <div class="field-name-row">
+            <div class="field-required"></div>
+            <div class="field-name">moq</div>
+            <span class="field-owner boss">老闆</span>
+          </div>
           <div class="field-desc">最低訂購量</div>
           <div class="field-note">純數字</div>
         </div>
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-name">material</div></div>
+          <div class="field-name-row">
+            <div class="field-name">material</div>
+            <span class="field-owner sales">業務助理</span>
+          </div>
           <div class="field-desc">材質（影響篩選分類）</div>
           <div class="field-note">填廠商提供的完整材質描述，系統會自動對應篩選分類：</div>
           <div class="field-values">
@@ -558,7 +649,10 @@ code {
         </div>
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-name">tag</div></div>
+          <div class="field-name-row">
+            <div class="field-name">tag</div>
+            <span class="field-owner sales">業務助理</span>
+          </div>
           <div class="field-desc">標籤（單選）</div>
           <div class="field-note">只填一個，從下列選項擇一：</div>
           <div class="field-values">
@@ -570,7 +664,10 @@ code {
         </div>
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-name">industries</div></div>
+          <div class="field-name-row">
+            <div class="field-name">industries</div>
+            <span class="field-owner sales">業務助理</span>
+          </div>
           <div class="field-desc">適合產業（可多選）</div>
           <div class="field-note">多個以逗號分隔，從下列選項擇填：</div>
           <div class="field-values">
@@ -585,7 +682,10 @@ code {
         </div>
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-name">themes</div></div>
+          <div class="field-name-row">
+            <div class="field-name">themes</div>
+            <span class="field-owner sales">業務助理</span>
+          </div>
           <div class="field-desc">適合場合（可多選）</div>
           <div class="field-note">多個以逗號分隔，從下列選項擇填：</div>
           <div class="field-values">
@@ -599,25 +699,38 @@ code {
         </div>
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-name">nas_path</div></div>
+          <div class="field-name-row">
+            <div class="field-name">nas_path</div>
+            <span class="field-owner design">設計</span>
+          </div>
           <div class="field-desc">NAS 原圖路徑</div>
-          <div class="field-note">步驟 2 上傳後的路徑，例：<code>\\COZU-NAS\樣品照\商品名\</code></div>
+          <div class="field-note">步驟 3 設計存檔後填入，例：<code>\\COZU-NAS\樣品照\商品名\</code></div>
         </div>
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-required"></div><div class="field-name">image_url</div></div>
+          <div class="field-name-row">
+            <div class="field-required"></div>
+            <div class="field-name">image_url</div>
+            <span class="field-owner design">設計</span>
+          </div>
           <div class="field-desc">去背圖公開 URL</div>
-          <div class="field-note">步驟 4 設計填回的 Shopline URL，必須是可公開存取的完整網址</div>
+          <div class="field-note">步驟 3 設計上傳 Shopline 後直接填入，必須是可公開存取的完整網址。</div>
         </div>
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-name">proposals</div></div>
+          <div class="field-name-row">
+            <div class="field-name">proposals</div>
+            <span class="field-owner sales">業務助理</span>
+          </div>
           <div class="field-desc">提案紀錄</div>
-          <div class="field-note">新品上架時留空。格式：<code>公司|場合|年份|selected|URL</code>，多筆以換行分隔</div>
+          <div class="field-note">新品上架時留空。格式：<code>公司|場合|年份|selected|URL</code>，多筆以換行分隔。<br>範例：<code>台積電|週年慶|2025|selected|https://...</code></div>
         </div>
 
         <div class="field-row">
-          <div class="field-name-row"><div class="field-name">last_updated_time</div></div>
+          <div class="field-name-row">
+            <div class="field-name">last_updated_time</div>
+            <span class="field-owner sales">業務助理</span>
+          </div>
           <div class="field-desc">最後更新時間</div>
           <div class="field-note">填上架當天日期，格式：<code>YYYY-MM-DD</code></div>
         </div>
@@ -636,12 +749,7 @@ code {
 </div><!-- /shell -->
 
 <script>
-// ════════════════════════════════════
-// 設定：更新這裡的日期即可
-// ════════════════════════════════════
-const LAST_UPDATED = '2026-06-15';
-
-// 右上角 + 頁尾同步顯示
+const LAST_UPDATED = '2026-06-17';
 document.getElementById('lastUpdated').textContent = '最後更新 ' + LAST_UPDATED;
 document.getElementById('footerDate').textContent  = '最後更新：' + LAST_UPDATED;
 </script>
