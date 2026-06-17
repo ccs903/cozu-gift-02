@@ -36,7 +36,7 @@
   --hover:   var(--color-bg-hover);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { min-height: 100%; }
+html, body { height: 100%; }
 body {
   font-family: var(--font);
   font-size: 13px;
@@ -166,7 +166,31 @@ a { color: inherit; text-decoration: none; }
 .clear-btn:disabled { opacity: .35; cursor: default; }
 
 .fgroup { padding: 13px 0; border-top: 1px solid var(--line); }
-.fgroup-title { font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+.fgroup-title {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.fgroup-title.collapsible {
+  margin-bottom: 0;
+  cursor: pointer;
+  user-select: none;
+}
+.fgroup-title.collapsible .fgroup-arrow {
+  width: 14px;
+  height: 14px;
+  color: var(--ink-2);
+  transition: transform .2s;
+  flex-shrink: 0;
+  transform: rotate(90deg);
+}
+.fgroup.collapsed .fgroup-title.collapsible .fgroup-arrow { transform: rotate(0deg); }
+.fgroup-body { overflow: hidden; }
+.fgroup.collapsible .fgroup-body { padding-top: 8px; }
+.fgroup.collapsed .fgroup-body { display: none; }
 
 /* checkbox options */
 .opt {
@@ -675,21 +699,36 @@ a { color: inherit; text-decoration: none; }
     </div>
 
     <!-- 場合 -->
-    <div class="fgroup">
-      <div class="fgroup-title">場合</div>
-      <div id="themeOpts"></div>
+    <div class="fgroup collapsible collapsed">
+      <div class="fgroup-title collapsible" onclick="toggleFgroup(this)">
+        場合
+        <svg class="fgroup-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6L15 12L9 18"/></svg>
+      </div>
+      <div class="fgroup-body">
+        <div id="themeOpts"></div>
+      </div>
     </div>
 
     <!-- 適合產業 -->
-    <div class="fgroup">
-      <div class="fgroup-title">適合產業</div>
-      <div id="indOpts"></div>
+    <div class="fgroup collapsible collapsed">
+      <div class="fgroup-title collapsible" onclick="toggleFgroup(this)">
+        適合產業
+        <svg class="fgroup-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6L15 12L9 18"/></svg>
+      </div>
+      <div class="fgroup-body">
+        <div id="indOpts"></div>
+      </div>
     </div>
 
-    <!-- 風格 -->
-    <div class="fgroup">
-      <div class="fgroup-title">標籤</div>
-      <div id="tagOpts"></div>
+    <!-- 標籤 -->
+    <div class="fgroup collapsible collapsed">
+      <div class="fgroup-title collapsible" onclick="toggleFgroup(this)">
+        標籤
+        <svg class="fgroup-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6L15 12L9 18"/></svg>
+      </div>
+      <div class="fgroup-body">
+        <div id="tagOpts"></div>
+      </div>
     </div>
   </aside>
 
@@ -1075,6 +1114,13 @@ function render() {
       </div>`;
     grid.appendChild(card);
   });
+}
+
+// ════════════════════════════════════
+// Accordion
+// ════════════════════════════════════
+function toggleFgroup(titleEl) {
+  titleEl.closest('.fgroup').classList.toggle('collapsed');
 }
 
 // ════════════════════════════════════
