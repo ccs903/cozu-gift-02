@@ -789,7 +789,6 @@ function parseGviz(json) {
 }
 
 function getMats(p) {
-  // 直接讀 material_category，有值就回傳陣列，沒有就回傳空陣列
   return p.material_category ? [p.material_category] : [];
 }
 
@@ -855,10 +854,23 @@ function computeCounts() {
 // ════════════════════════════════════
 // 建立 rail 選項
 // ════════════════════════════════════
-const ALL_MATS  = ['玻璃','其他'];
+// 材質分類從資料動態產生，其餘固定
 const ALL_THEMES = ['週年慶','員工福利','節慶送禮','尾牙','新品上市','開幕活動'];
 const ALL_INDS  = ['科技','金融','醫療','零售','餐飲','政府機關','其他'];
 const ALL_TAGS  = ['熱銷','實用','科技感','環保'];
+
+// 從 products 取得所有不重複的 material_category，依出現順序排列
+function getDynamicMats() {
+  const seen = new Set();
+  const result = [];
+  products.forEach(p => {
+    if (p.material_category && !seen.has(p.material_category)) {
+      seen.add(p.material_category);
+      result.push(p.material_category);
+    }
+  });
+  return result.sort(); // 字母/筆畫排序，讓順序穩定
+}
 
 function buildCheckGroup(containerId, options, selSet, counts, onToggle) {
   const el = document.getElementById(containerId);
@@ -887,8 +899,9 @@ function buildChipGroup(containerId, options, selSet, onToggle) {
 }
 
 function buildRail() {
-  const counts = computeCounts();
-  buildCheckGroup('matOpts',   ALL_MATS,   selMats,   counts.mat,   v => toggle(selMats, v, render));
+  const counts  = computeCounts();
+  const allMats = getDynamicMats();
+  buildCheckGroup('matOpts',   allMats,    selMats,   counts.mat,   v => toggle(selMats, v, render));
   buildCheckGroup('themeOpts', ALL_THEMES, selThemes, counts.theme, v => toggle(selThemes, v, render));
   buildCheckGroup('indOpts',   ALL_INDS,   selInds,   counts.ind,   v => toggle(selInds, v, render));
   buildCheckGroup('tagOpts',   ALL_TAGS,   selTags,   counts.tag,   v => toggle(selTags, v, render));
