@@ -34,12 +34,15 @@ a { color: inherit; text-decoration: none; }
 
 /* ── Topbar ── */
 .topbar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 10;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
+body { padding-top: 106px; }
 .topbar-inner {
   max-width: 1280px;
   margin: 0 auto;
@@ -854,12 +857,7 @@ function computeCounts() {
 // ════════════════════════════════════
 // 建立 rail 選項
 // ════════════════════════════════════
-// 材質分類從資料動態產生，其餘固定
-const ALL_THEMES = ['週年慶','員工福利','節慶送禮','尾牙','新品上市','開幕活動'];
-const ALL_INDS  = ['科技','金融','醫療','零售','餐飲','政府機關','其他'];
-const ALL_TAGS  = ['熱銷','實用','科技感','環保'];
-
-// 從 products 取得所有不重複的 material_category，依出現順序排列
+// 從 products 取得所有不重複的 material_category
 function getDynamicMats() {
   const seen = new Set();
   const result = [];
@@ -869,8 +867,12 @@ function getDynamicMats() {
       result.push(p.material_category);
     }
   });
-  return result.sort(); // 字母/筆畫排序，讓順序穩定
+  return result.sort();
 }
+
+const ALL_THEMES = ['週年慶','員工福利','節慶送禮','尾牙','新品上市','開幕活動'];
+const ALL_INDS  = ['科技','金融','醫療','零售','餐飲','政府機關','其他'];
+const ALL_TAGS  = ['熱銷','實用','科技感','環保'];
 
 function buildCheckGroup(containerId, options, selSet, counts, onToggle) {
   const el = document.getElementById(containerId);
