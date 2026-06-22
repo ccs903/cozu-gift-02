@@ -956,6 +956,18 @@ function getLastPriceTier(raw) {
   return tiers.length ? tiers[tiers.length - 1] : null;
 }
 
+// 將 price 字串格式化為顯示用：「65-75」→「65–75」；「65」→「65」
+function formatPrice(priceStr) {
+  if (!priceStr) return '';
+  const s = String(priceStr).trim();
+  // 範圍值：數字-數字
+  if (/^\d+(\.\d+)?-\d+(\.\d+)?$/.test(s)) {
+    const [lo, hi] = s.split('-');
+    return `${lo}–${hi}`;
+  }
+  return s;
+}
+
 // 從價格字串取最低值：「60-65」→ 60；「65」→ 65
 function lowestPrice(priceStr) {
   if (!priceStr) return null;
@@ -1167,7 +1179,7 @@ function render() {
         </div>
         <div class="card-price">
           <div class="card-price-row">
-            <span class="card-price-main">NT$${p.price || p.price_max}</span>
+            <span class="card-price-main">NT$${formatPrice(p.price) || p.price_max}</span>
             ${(() => {
               const last = getLastPriceTier(p.priceNote);
               if (last) {
@@ -1245,7 +1257,7 @@ function openPeek(p) {
     <div class="peek-name">${p.name}</div>
     <div class="peek-price">
       <div class="peek-price-row">
-        <span class="peek-price-main">NT$${p.price || p.price_max}</span>
+        <span class="peek-price-main">NT$${formatPrice(p.price) || p.price_max}</span>
         ${(() => {
           const last = getLastPriceTier(p.priceNote);
           if (last) {
