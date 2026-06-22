@@ -492,7 +492,39 @@ a { color: inherit; text-decoration: none; }
 .peek-price-row { display: flex; align-items: baseline; gap: 8px; }
 .peek-price-main { font-size: 15px; font-weight: 700; }
 .peek-price-min { font-size: 11px; font-weight: 700; color: var(--ink-2); }
-.peek-price-note { font-size: 11px; font-weight: 400; color: var(--ink-2); margin-top: 3px; line-height: 1.5; }
+.peek-price-note { font-size: 12px; font-weight: 400; color: var(--ink-2); margin-top: 3px; line-height: 1.5; }
+.peek-price-remark { font-size: 12px; font-weight: 400; color: var(--ink-2); margin-top: 8px; line-height: 1.6; padding-top: 8px; border-top: 1px dashed var(--line); }
+
+/* 報價級距表格 */
+.price-tier-table {
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.price-tier-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.price-tier-row:last-of-type { border-bottom: none; }
+.price-tier-qty { color: var(--ink-2); }
+.price-tier-price { font-weight: 600; color: var(--ink); }
+.price-tier-more {
+  padding: 7px 12px;
+  font-size: 11px;
+  border-top: 1px dashed var(--line);
+  background: var(--bg-soft);
+}
+.price-tier-more a {
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.price-tier-more a:hover { color: var(--ink); }
 
 .dl { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 14px; }
 .dl-title {
@@ -855,14 +887,16 @@ function parseGviz(json) {
         })
       : [];
 
-    const priceMax = parseFloat(get('price_max')) || parseFloat(get('price')) || 0;
-    const priceMin = parseFloat(get('price_min')) || priceMax;
+    const priceRaw  = get('price');   // 原始字串，可能是 "120-130" 或 "120"
+    const priceMax  = parseFloat(get('price_max')) || parseFloat(priceRaw) || 0;
+    const priceMin  = parseFloat(get('price_min')) || priceMax;
     return {
       name              : get('name'),
-      price             : priceMax,
+      price             : priceRaw,   // 保留原始字串供顯示用
       price_max         : priceMax,
       price_min         : priceMin,
       priceNote         : get('priceNote'),
+      priceRemark       : get('priceRemark'),
       moq               : parseInt(get('moq')) || 0,
       material_category : get('material_category'),
       material          : get('material'),
@@ -894,6 +928,27 @@ function parseGvizDate(val) {
     return hour ? `${year}/${month}/${day} ${hour}:${min}` : `${year}/${month}/${day}`;
   }
   return val; // 如果已經是純文字就直接回傳
+}
+
+// ════════════════════════════════════
+// priceNote 解析工具
+// ════════════════════════════════════
+// priceNote 格式：「200:170-180|300:155-165|500:120-130|1000:100-110」
+// 回傳陣列 [{qty, price}, ...]，已排序由小到大
+function parsePriceNote(raw) {
+  if (!raw || !raw.includes(':')) return [];
+  return raw.split('|').map(seg => {
+    const [qty, price] = seg.split(':');
+    const q = parseInt((qty || '').trim());
+    const p = (price || '').trim();
+    return (isNaN(q) || !p) ? null : { qty: q, price: p };
+  }).filter(Boolean).sort((a, b) => a.qty - b.qty);
+}
+
+// 取 priceNote 最後一筆（最大量、最低價）供卡片小字顯示
+function getLastPriceTier(raw) {
+  const tiers = parsePriceNote(raw);
+  return tiers.length ? tiers[tiers.length - 1] : null;
 }
 
 // ════════════════════════════════════
@@ -1099,9 +1154,15 @@ function render() {
         </div>
         <div class="card-price">
           <div class="card-price-row">
-            <span class="card-price-main">NT$${p.price_max}</span>
-            ${p.price_min < p.price_max ? `<span class="card-price-min">NT$${p.price_min}起</span>` : ''}
+            <span class="card-price-main">NT$${p.price || p.price_max}</span>
+            ${(() => {
+              const last = getLastPriceTier(p.priceNote);
+              if (last) return `<span class="card-price-min">NT$${last.price}起</span>`;
+              if (p.price_min && p.price_min < p.price_max) return `<span class="card-price-min">NT$${p.price_min}起</span>`;
+              return '';
+            })()}
           </div>
+          <div class="card-price-note">500份報價${p.priceNote && parsePriceNote(p.priceNote).length ? '・量大另議' : ''}</div>
         </div>
         <div class="card-meta">
           <span>MOQ ${p.moq.toLocaleString()}</span>
@@ -1169,10 +1230,25 @@ function openPeek(p) {
     <div class="peek-name">${p.name}</div>
     <div class="peek-price">
       <div class="peek-price-row">
-        <span class="peek-price-main">NT$${p.price_max}</span>
-        ${p.price_min < p.price_max ? `<span class="peek-price-min">NT$${p.price_min}起</span>` : ''}
+        <span class="peek-price-main">NT$${p.price || p.price_max}</span>
+        ${(() => {
+          const last = getLastPriceTier(p.priceNote);
+          if (last) return `<span class="peek-price-min">NT$${last.price}起</span>`;
+          if (p.price_min && p.price_min < p.price_max) return `<span class="peek-price-min">NT$${p.price_min}起</span>`;
+          return '';
+        })()}
       </div>
-      ${p.priceNote ? `<div class="peek-price-note">${p.priceNote}</div>` : ''}
+      <div class="peek-price-note">500份報價</div>
+      ${(() => {
+        const tiers = parsePriceNote(p.priceNote);
+        if (!tiers.length) return p.priceNote ? `<div class="peek-price-note" style="margin-top:4px">${p.priceNote}</div>` : '';
+        const rows = tiers.map(t =>
+          `<div class="price-tier-row"><span class="price-tier-qty">${t.qty.toLocaleString()}份</span><span class="price-tier-price">NT$${t.price}</span></div>`
+        ).join('');
+        const QUOTATION_URL = 'https://docs.google.com/spreadsheets/d/1Ng0iHDlKDWyTRi8FJVd1kJDroKCu28700F1RXP3eMZE/edit?gid=1377754576#gid=1377754576';
+        return `<div class="price-tier-table">${rows}<div class="price-tier-more"><a href="${QUOTATION_URL}" target="_blank" rel="noopener noreferrer">&gt;1000 量大另議 →</a></div></div>`;
+      })()}
+      ${p.priceRemark ? `<div class="peek-price-remark">${p.priceRemark}</div>` : ''}
     </div>
 
     <div class="dl">
