@@ -1180,15 +1180,7 @@ function render() {
         <div class="card-price">
           <div class="card-price-row">
             <span class="card-price-main">NT$${formatPrice(p.price) || p.price_max}</span>
-            ${(() => {
-              const last = getLastPriceTier(p.priceNote);
-              if (last) {
-                const low = lowestPrice(last.price);
-                return low !== null ? `<span class="card-price-min">NT$${low}起</span>` : '';
-              }
-              if (p.price_min && p.price_min < p.price_max) return `<span class="card-price-min">NT$${p.price_min}起</span>`;
-              return '';
-            })()}
+            ${p.price_min && p.price_min < p.price_max ? `<span class="card-price-min">NT$${p.price_min}起</span>` : ''}
           </div>
         </div>
         <div class="card-meta">
@@ -1258,15 +1250,7 @@ function openPeek(p) {
     <div class="peek-price">
       <div class="peek-price-row">
         <span class="peek-price-main">NT$${formatPrice(p.price) || p.price_max}</span>
-        ${(() => {
-          const last = getLastPriceTier(p.priceNote);
-          if (last) {
-            const low = lowestPrice(last.price);
-            return low !== null ? `<span class="peek-price-min">NT$${low}起</span>` : '';
-          }
-          if (p.price_min && p.price_min < p.price_max) return `<span class="peek-price-min">NT$${p.price_min}起</span>`;
-          return '';
-        })()}
+        ${p.price_min && p.price_min < p.price_max ? `<span class="peek-price-min">NT$${p.price_min}起</span>` : ''}
       </div>
 
       ${(() => {
