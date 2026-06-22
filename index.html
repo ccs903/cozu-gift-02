@@ -892,7 +892,11 @@ function parseGviz(json) {
         })
       : [];
 
-    const priceRaw  = get('price');   // 原始字串，可能是 "120-130" 或 "120"
+    // price 欄位用 .f（格式化字串）讀取，避免 gviz 把 "65-75" 當成數學運算
+    const priceIdx  = cols.indexOf('price');
+    const priceRaw  = (priceIdx >= 0 && row.c[priceIdx])
+      ? String(row.c[priceIdx].f ?? row.c[priceIdx].v ?? '').trim()
+      : '';
     const priceMax  = parseFloat(get('price_max')) || parseFloat(priceRaw) || 0;
     const priceMin  = parseFloat(get('price_min')) || priceMax;
     return {
